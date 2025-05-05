@@ -57,7 +57,7 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                     }
                 }
 
-                try (ResultSet tablesRs = metaData.getTables(null, null, null, new String[]{"TABLE"})) {
+                try (ResultSet tablesRs = metaData.getTables(null, "%", "%", new String[]{"TABLE"})) {
                     while (tablesRs.next()) {
                         String tableName = tablesRs.getString("TABLE_NAME");
                         String schema = tablesRs.getString("TABLE_SCHEM");
@@ -127,9 +127,7 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                 try (ResultSet rs = metaData.getColumns(null, schema, table, null)) {
                     while (rs.next()) {
                         DBColumn column = new DBColumn();
-                        column.setName(
-                                rs.getString("COLUMN_NAME")
-                        );
+                        column.setName(rs.getString("COLUMN_NAME"));
                         column.setType(rs.getString("TYPE_NAME"));
                         column.setNullable(rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
                         String defaultValue = rs.getString("COLUMN_DEF");
