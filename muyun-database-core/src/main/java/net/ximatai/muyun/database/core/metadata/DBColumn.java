@@ -11,6 +11,7 @@ public class DBColumn {
     private boolean nullable;
     private boolean primaryKey;
     private boolean sequence;
+    private Integer length;
 
     // 使用正则表达式来匹配单引号之间的内容
     private static String regex = "'([^']*)'";
@@ -104,5 +105,13 @@ public class DBColumn {
             return matcher.group(1);  // 返回第一个括号中的匹配结果
         }
         return input;  // 如果没有匹配的内容，返回 null
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public void setLength(Integer length) {
+        this.length = length;
     }
 }

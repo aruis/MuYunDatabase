@@ -63,7 +63,11 @@ public class TableBuilder {
         DBTable dbTable = info.getSchema(schema).getTable(wrapper.getName());
 
         if (wrapper.getComment() != null) {
-            db.execute("COMMENT ON table " + schema + "." + name + " is '" + wrapper.getComment() + "'");
+            if (getDatabaseType().equals(POSTGRESQL)) {
+                db.execute("COMMENT ON table " + schema + "." + name + " is '" + wrapper.getComment() + "'");
+            } else if (getDatabaseType().equals(MYSQL)) {
+                db.execute("ALTER TABLE " + schema + "." + name + " COMMENT '" + wrapper.getComment() + "'");
+            }
         }
 
         if (wrapper.getPrimaryKey() != null) {
@@ -126,7 +130,12 @@ public class TableBuilder {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " set default " + defaultValue);
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + " " + defaultValue);
+                if ("AUTO_INCREMENT".equals(defaultValue)) {
+                    db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + " " + defaultValue);
+                } else {
+                    db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + length + " DEFAULT " + defaultValue);
+                }
+
             }
 
         }
@@ -135,7 +144,7 @@ public class TableBuilder {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("comment on column " + dbTable.getSchema() + "." + dbTable.getName() + "." + name + " is '" + comment + "'");
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + " COMMENT '" + comment + "'");
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + length + " COMMENT '" + comment + "'");
 //                ALTER TABLE public.basic MODIFY COLUMN id BIGINT COMMENT '这里是你的注释内容';
             }
 

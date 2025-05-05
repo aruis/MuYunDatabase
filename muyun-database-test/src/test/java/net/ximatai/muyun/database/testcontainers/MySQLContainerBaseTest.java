@@ -21,9 +21,10 @@ public class MySQLContainerBaseTest {
     private DataSource dataSource;
 
     @Container
+//    private static final JdbcDatabaseContainer postgresContainer = new MySQLContainer("mysql:8.4.5")
     private static final JdbcDatabaseContainer postgresContainer = new MySQLContainer()
             .withDatabaseName("testdb")
-            .withUsername("root")
+            .withUsername("testuser")
             .withPassword("testpass");
 
     @Test

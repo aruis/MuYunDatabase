@@ -48,8 +48,13 @@ public class MuYunDatabaseMySQLTest extends MySQLContainerBaseTest {
     void testTableBuilder() {
         TableWrapper basic = TableWrapper.withName("basic")
                 .setPrimaryKey(ID_MYSQL)
-                .addColumn(Column.of("v_name").setLength(20).setIndexed())
-                .addColumn("i_age");
+                .setComment("测试表")
+                .addColumn(Column.of("v_name").setLength(20).setIndexed().setComment("名称").setDefaultValue("test"))
+                .addColumn(Column.of("i_age").setComment("年龄"))
+                .addColumn("n_price")
+                .addColumn("b_flag")
+                .addColumn("d_date")
+                .addColumn(Column.of("t_create").setDefaultValue("CURRENT_TIMESTAMP"));
 
         boolean build = new TableBuilder(db).build(basic);
 
