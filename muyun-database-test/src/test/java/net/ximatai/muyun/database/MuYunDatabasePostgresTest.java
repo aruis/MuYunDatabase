@@ -1,62 +1,35 @@
 package net.ximatai.muyun.database;
 
-import net.ximatai.muyun.database.core.builder.TableBuilder;
-import net.ximatai.muyun.database.core.builder.TableWrapper;
-import net.ximatai.muyun.database.core.metadata.DBInfo;
-import net.ximatai.muyun.database.core.metadata.DBTable;
-import net.ximatai.muyun.database.jdbi.JdbiDatabaseOperations;
-import net.ximatai.muyun.database.jdbi.JdbiMetaDataLoader;
-import net.ximatai.muyun.database.testcontainers.PostgresContainerBaseTest;
-import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.statement.Slf4JSqlLogger;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import net.ximatai.muyun.database.core.builder.Column;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static net.ximatai.muyun.database.core.builder.Column.ID_POSTGRES;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MuYunDatabasePostgresTest extends PostgresContainerBaseTest {
+@Testcontainers
+public class MuYunDatabasePostgresTest extends MuYunDatabaseBaseTest {
 
-    Jdbi jdbi;
-    JdbiMetaDataLoader loader;
-    JdbiDatabaseOperations db;
+    @Container
+//    private static final JdbcDatabaseContainer postgresContainer = new MySQLContainer("mysql:8.4.5")
+    private static final JdbcDatabaseContainer container = new PostgreSQLContainer("postgres:17-alpine")
+            .withDatabaseName("testdb")
+            .withUsername("testuser")
+            .withPassword("testpass");
 
-    @BeforeAll
-    void setUp() {
-        jdbi = Jdbi.create(getDataSource())
-                .setSqlLogger(new Slf4JSqlLogger());
-        loader = new JdbiMetaDataLoader(jdbi);
-        db = new JdbiDatabaseOperations(jdbi, loader);
+    @Override
+    DatabaseType getDatabaseType() {
+        return DatabaseType.POSTGRESQL;
     }
 
-    @Test
-    void testGetDBInfo() {
-
-        DBInfo info = loader.getDBInfo();
-
-        Assertions.assertEquals("postgresql", info.getTypeName().toLowerCase());
-        Assertions.assertNotNull(info.getSchema("public"));
-
+    @Override
+    Column getPrimaryKey() {
+        return ID_POSTGRES;
     }
 
-    @Test
-    void testTableBuilder() {
-        TableWrapper basic = TableWrapper.withName("basic")
-                .setPrimaryKey(ID_POSTGRES)
-                .addColumn("v_name")
-                .addColumn("i_age");
-
-        boolean build = new TableBuilder(db).build(basic);
-
-        Assertions.assertTrue(build);
-
-        DBInfo info = loader.getDBInfo();
-
-        DBTable table = info.getDefaultSchema().getTable("basic");
-
-        Assertions.assertNotNull(table);
+    @Override
+    JdbcDatabaseContainer getContainer() {
+        return container;
     }
-
 }
