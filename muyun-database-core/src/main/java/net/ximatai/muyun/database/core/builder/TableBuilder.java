@@ -103,6 +103,12 @@ public class TableBuilder {
         Object defaultValue = column.getDefaultValue();
         String comment = column.getComment();
         String length = column.getLength() == null ? "" : "(" + column.getLength() + ")";
+        if (column.getType().equals(ColumnType.NUMERIC)) {
+            if (column.getScale() != null && column.getPrecision() != null) {
+                length = "(" + column.getPrecision() + "," + column.getScale() + ")";
+            }
+        }
+
         boolean sequence = column.isSequence();
         boolean nullable = column.isNullable();
         boolean primaryKey = column.isPrimaryKey();
@@ -172,7 +178,6 @@ public class TableBuilder {
         }
 
         return result;
-
     }
 
     private boolean checkAndBuildIndex(DBTable dbTable, Index index) {

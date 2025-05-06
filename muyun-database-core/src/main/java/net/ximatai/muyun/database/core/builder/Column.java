@@ -6,6 +6,8 @@ public class Column {
     private ColumnType type;
     private Object defaultValue;
     private Integer length;
+    private Integer precision;
+    private Integer scale;
     private boolean nullable = true;
     private boolean unique = false;
     private boolean primaryKey = false;
@@ -113,6 +115,24 @@ public class Column {
 
     public Column setIndexed() {
         this.indexed = true;
+        return this;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public Column setPrecision(Integer precision) {
+        this.precision = precision;
+        return this;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+
+    public Column setScale(Integer scale) {
+        this.scale = scale;
         return this;
     }
 
