@@ -1,12 +1,11 @@
 package net.ximatai.muyun.database;
 
 import net.ximatai.muyun.database.core.builder.Column;
+import net.ximatai.muyun.database.core.builder.PredefinedColumn;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import static net.ximatai.muyun.database.core.builder.Column.ID_POSTGRES;
 
 @Testcontainers
 public class MuYunDatabasePostgresTest extends MuYunDatabaseBaseTest {
@@ -25,7 +24,7 @@ public class MuYunDatabasePostgresTest extends MuYunDatabaseBaseTest {
 
     @Override
     Column getPrimaryKey() {
-        return ID_POSTGRES;
+        return PredefinedColumn.Id.POSTGRES;
     }
 
     @Override

@@ -8,6 +8,10 @@
         </encoder>
     </appender>
 
+    <logger name="org.jdbi" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
     <!-- 设置根日志级别为 INFO，并关联控制台输出 -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />

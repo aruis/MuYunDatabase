@@ -14,36 +14,7 @@ public class Column {
     private boolean sequence = false;
     private boolean indexed = false;
 
-    public static final Column ID_POSTGRES = new Column("id")
-            .setPrimaryKey()
-            .setType(ColumnType.VARCHAR)
-            .setDefaultValue("gen_random_uuid()");
-
-    public static final Column ID_MYSQL = new Column("id")
-            .setPrimaryKey()
-            .setType(ColumnType.BIGINT)
-            .setDefaultValue("AUTO_INCREMENT");
-
-    public static final Column DELETE_FLAG = new Column("b_delete")
-            .setType(ColumnType.BOOLEAN)
-            .setDefaultValue(false);
-
-    public static final Column TREE_PID = new Column("pid")
-            .setType(ColumnType.VARCHAR)
-            .setIndexed();
-
-    public static final Column ORDER = new Column("n_order")
-            .setSequence()
-            .setIndexed();
-
-    public static final Column CODE = new Column("v_code")
-            .setType(ColumnType.VARCHAR)
-            .setIndexed();
-
-    public static final Column CREATE = new Column("t_create")
-            .setIndexed();
-
-    private Column(String name) {
+    public Column(String name) {
         this.name = name;
         this.type = buildTypeWithColumnName(name);
     }
