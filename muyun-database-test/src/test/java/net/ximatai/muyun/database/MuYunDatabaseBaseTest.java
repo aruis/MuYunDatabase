@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.ximatai.muyun.database.core.builder.Column;
 import net.ximatai.muyun.database.core.builder.TableBuilder;
 import net.ximatai.muyun.database.core.builder.TableWrapper;
+import net.ximatai.muyun.database.core.metadata.DBColumn;
 import net.ximatai.muyun.database.core.metadata.DBInfo;
 import net.ximatai.muyun.database.core.metadata.DBTable;
 import net.ximatai.muyun.database.jdbi.JdbiDatabaseOperations;
@@ -108,6 +109,44 @@ public abstract class MuYunDatabaseBaseTest {
         assertTrue(table.getColumn("id").isPrimaryKey());
 
         tableCreated = true;
+    }
+
+    @Test
+    void testTableBuilderChangeLength() {
+        String schema = loader.getDBInfo().getDefaultSchemaName();
+
+        TableWrapper basic = TableWrapper.withName("basic")
+                .setPrimaryKey(getPrimaryKey())
+                .setComment("测试表")
+                .addColumn(Column.of("v_name").setLength(20).setIndexed().setComment("名称").setDefaultValue("test"))
+                .addColumn(Column.of("i_age").setComment("年龄"))
+                .addColumn(Column.of("n_price").setPrecision(10).setScale(2))
+                .addColumn("b_flag")
+                .addColumn("d_date")
+                .addColumn(Column.of("t_create").setDefaultValue("CURRENT_TIMESTAMP"));
+
+        new TableBuilder(db).build(basic);
+
+        Map body = Map.of("v_name", "abcd_efgh",
+                "i_age", 5,
+                "b_flag", true,
+                "n_price", 10.2,
+                "d_date", "2024-01-01"
+        );
+
+        String id = db.insertItem(schema, "basic", body);
+
+        TableWrapper basic2 = TableWrapper.withName("basic")
+                .addColumn(Column.of("v_name").setLength(12).setIndexed().setComment("名称").setDefaultValue("test"));
+
+        new TableBuilder(db).build(basic2);
+
+        DBInfo info = loader.getDBInfo();
+
+        DBTable table = info.getDefaultSchema().getTable("basic");
+        DBColumn vName = table.getColumn("v_name");
+
+        assertEquals(12, vName.getLength());
     }
 
     @Test

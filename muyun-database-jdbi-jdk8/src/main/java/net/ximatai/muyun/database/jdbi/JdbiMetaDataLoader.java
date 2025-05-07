@@ -129,6 +129,7 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                         DBColumn column = new DBColumn();
                         column.setName(rs.getString("COLUMN_NAME"));
                         column.setType(rs.getString("TYPE_NAME"));
+                        column.setLength(rs.getInt("COLUMN_SIZE"));
                         column.setNullable(rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
                         String defaultValue = rs.getString("COLUMN_DEF");
                         column.setDefaultValue(defaultValue);

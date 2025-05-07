@@ -124,6 +124,14 @@ public class TableBuilder {
 
         DBColumn dbColumn = dbTable.getColumn(name);
 
+        if (column.getLength() != null && !column.getLength().equals(dbColumn.getLength())) {
+            if (getDatabaseType().equals(POSTGRESQL)) {
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " type " + type + length);
+            } else if (getDatabaseType().equals(MYSQL)) {
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + length);
+            }
+        }
+
         if (primaryKey && !dbColumn.isPrimaryKey()) {
             db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " add primary key (" + name + ")");
         }
