@@ -3,13 +3,12 @@ plugins {
     checkstyle
     signing
     id("io.github.jeadyx.sonatype-uploader") version "2.8"
-    id("org.kordamp.gradle.jandex") version "2.1.0"
 }
 
 allprojects {
     group = "net.ximatai.muyun.database"
-    version = "1.0.0-SNAPSHOT"
-//    version = "0.1.11"
+//    version = "1.0.0-SNAPSHOT"
+    version = "1.25.1"
 
     repositories {
         maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven") }
@@ -20,11 +19,9 @@ allprojects {
 subprojects {
     apply {
         plugin("java")
-        plugin("checkstyle")
         plugin("maven-publish")
         plugin("signing")
         plugin("io.github.jeadyx.sonatype-uploader")
-        plugin("org.kordamp.gradle.jandex")
     }
 
     java {
@@ -66,18 +63,18 @@ subprojects {
             }
         }
         repositories {
-//            maven {
-//                url = uri(layout.buildDirectory.dir("repo"))
-//            }
-
             maven {
-                url = uri("http://192.168.3.19:8081/repository/maven-snapshots/")
-                isAllowInsecureProtocol = true
-                credentials {
-                    username = findProperty("office19.maven.username").toString()
-                    password = findProperty("office19.maven.password").toString()
-                }
+                url = uri(layout.buildDirectory.dir("repo"))
             }
+
+//            maven {
+//                url = uri("http://192.168.3.19:8081/repository/maven-snapshots/")
+//                isAllowInsecureProtocol = true
+//                credentials {
+//                    username = findProperty("office19.maven.username").toString()
+//                    password = findProperty("office19.maven.password").toString()
+//                }
+//            }
         }
     }
 
@@ -95,40 +92,6 @@ subprojects {
             findProperty("signing.password").toString()
         )
     }
-
-    tasks.withType<Javadoc> {
-        enabled = false
-    }
-
-    tasks.named<Checkstyle>("checkstyleMain") {
-        dependsOn(tasks.named("jandex"))
-    }
-
-    tasks.named<Javadoc>("javadoc") {
-        mustRunAfter(tasks.named("jandex"))
-    }
-
-    tasks.withType<GenerateModuleMetadata> {
-        suppressedValidationErrors.add("enforced-platform")
-    }
-
-    tasks.withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.compilerArgs.add("-parameters")
-    }
-
-    tasks.withType<Test> {
-        maxHeapSize = "2g"
-    }
-
 }
 
-tasks.register("prepareRepo") {
-    group = "release"
-    dependsOn(subprojects.flatMap { it.tasks.matching { task -> task.name == "publishMavenJavaPublicationToMavenRepository" } })
-}
 
-tasks.register("releaseAllJars") {
-    group = "release"
-    dependsOn(subprojects.flatMap { it.tasks.matching { task -> task.name == "publishToSonatype" } })
-}
