@@ -41,8 +41,8 @@ subprojects {
                 from(components["java"])
                 pom {
                     description =
-                        "A cloud-native, asynchronous, developer-first, frontend-backend decoupled, and plug-and-play light-code platform."
-                    url = "https://github.com/ximatai/MuYun"
+                        "A lightweight database wrapper based on Jdbi, enabling incremental table and column creation while providing recommended CRUD functions."
+                    url = "https://github.com/ximatai/MuYunDatabase"
                     licenses {
                         license {
                             name = "The Apache License, Version 2.0"
@@ -58,9 +58,9 @@ subprojects {
                         }
                     }
                     scm {
-                        connection = "scm:git:git://github.com/ximatai/MuYun.git"
-                        developerConnection = "scm:git:ssh://github.com/ximatai/MuYun.git"
-                        url = "https://github.com/ximatai/MuYun"
+                        connection = "scm:git:git://github.com/ximatai/MuYunDatabase.git"
+                        developerConnection = "scm:git:ssh://github.com/ximatai/MuYunDatabase.git"
+                        url = "https://github.com/ximatai/MuYunDatabase"
                     }
                 }
             }
@@ -71,11 +71,11 @@ subprojects {
 //            }
 
             maven {
-                url = uri("http://192.168.6.205:8081/repository/maven-snapshots/")
+                url = uri("http://192.168.3.19:8081/repository/maven-snapshots/")
                 isAllowInsecureProtocol = true
                 credentials {
-                    username = findProperty("office.maven.username").toString()
-                    password = findProperty("office.maven.password").toString()
+                    username = findProperty("office19.maven.username").toString()
+                    password = findProperty("office19.maven.password").toString()
                 }
             }
         }
