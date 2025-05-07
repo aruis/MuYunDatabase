@@ -100,6 +100,9 @@ public class TableBuilder {
         String name = column.getName();
         ColumnType dataType = column.getType();
         String type = getColumnTypeTransform().transform(dataType);
+
+        Objects.requireNonNull(type, "column: " + column + " type not provided");
+
         Object defaultValue = column.getDefaultValue();
         String comment = column.getComment();
         String length = column.getLength() == null ? "" : "(" + column.getLength() + ")";
@@ -166,7 +169,7 @@ public class TableBuilder {
 
         }
 
-        if (dbColumn.isSequence() != sequence) {
+        if (getDatabaseType().equals(POSTGRESQL) && dbColumn.isSequence() != sequence) {
             String seq = dbTable.getName() + "_" + name + "_sql";
             if (sequence) {
                 db.execute("create sequence if not exists " + dbTable.getSchema() + "." + seq);
