@@ -11,6 +11,7 @@ public final class PredefinedColumn {
         public static final Column MYSQL = new Column("id")
                 .setPrimaryKey()
                 .setType(ColumnType.BIGINT)
+                .setSequence()
                 .setDefaultValue("AUTO_INCREMENT");
     }
 
