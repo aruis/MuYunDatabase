@@ -10,9 +10,10 @@ import net.ximatai.muyun.database.core.metadata.DBInfo;
 import net.ximatai.muyun.database.core.metadata.DBTable;
 import net.ximatai.muyun.database.jdbi.JdbiDatabaseOperations;
 import net.ximatai.muyun.database.jdbi.JdbiMetaDataLoader;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.MetaData;
 import org.jdbi.v3.core.statement.Slf4JSqlLogger;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,12 +21,16 @@ import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import javax.sql.DataSource;
-
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,7 +82,7 @@ public abstract class MuYunDatabaseBaseTest {
     void testGetDBInfo() {
         DBInfo info = loader.getDBInfo();
 
-        Assertions.assertEquals(getDatabaseType().name().toLowerCase(), info.getTypeName().toLowerCase());
+        assertEquals(getDatabaseType().name().toLowerCase(), info.getTypeName().toLowerCase());
         assertNotNull(info.getDefaultSchema());
     }
 
@@ -272,6 +277,44 @@ public abstract class MuYunDatabaseBaseTest {
         assertEquals("test_name_x", queried3.getFirst().get("v_name"));
         assertEquals("test_name_x", row.get("v_name"));
 
+    }
+
+    @Test
+    void testJdbiConnectionClosedWhenException() throws SQLException {
+        AtomicReference<Connection> connection = new AtomicReference<>();
+        assertThrowsExactly(SQLException.class, () -> {
+            jdbi.withHandle(handle -> {
+                connection.set(handle.getConnection());
+                throw new SQLException("");
+            });
+        });
+
+        assertTrue(connection.get().isClosed());
+    }
+
+    @Test
+    void testJdbiConnectionClosedWhenException2() throws SQLException {
+        AtomicReference<Connection> connection = new AtomicReference<>();
+        assertThrowsExactly(SQLException.class, () -> {
+            try (Handle open = jdbi.open();) {
+                connection.set(open.getConnection());
+                throw new SQLException("");
+            }
+        });
+
+        assertTrue(connection.get().isClosed());
+    }
+
+    @Test
+    void testJdbiConnectionClosedWhenException3() throws SQLException {
+        AtomicReference<Connection> connection = new AtomicReference<>();
+        assertThrowsExactly(SQLException.class, () -> {
+            Handle open = jdbi.open();
+            connection.set(open.getConnection());
+            throw new SQLException("");
+        });
+
+        assertFalse(connection.get().isClosed());
     }
 
 }
