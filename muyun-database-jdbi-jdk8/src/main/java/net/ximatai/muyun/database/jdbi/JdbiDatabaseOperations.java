@@ -151,9 +151,11 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
 
     @Override
     public <T> T insert(String sql, Map<String, ?> params, String pk, Class<T> idType) {
-        return getJdbi().withHandle(handle -> handle.createUpdate(sql)
-                .bindMap(params)
-                .executeAndReturnGeneratedKeys(pk).mapTo(idType).one());
+        return getJdbi().withHandle(handle ->
+                handle.createUpdate(sql)
+                        .attachToHandleForCleanup()
+                        .bindMap(params)
+                        .executeAndReturnGeneratedKeys(pk).mapTo(idType).one());
     }
 
     @Override
@@ -166,7 +168,8 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
                 batch.bindMap(params).add();
             }
 
-            batch.executePreparedBatch(pk)
+            batch.attachToHandleForCleanup()
+                    .executePreparedBatch(pk)
                     .mapTo(idType)
                     .forEach(generatedKeys::add);
 
@@ -177,6 +180,7 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
     @Override
     public Map<String, Object> row(String sql, Map<String, ?> params) {
         return getJdbi().withHandle(handle -> (Map<String, Object>) handle.createQuery(sql)
+                .attachToHandleForCleanup()
                 .bindMap(params)
                 .map(getRowMapper())
                 .findOne()
@@ -187,7 +191,7 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
     @Override
     public Map<String, Object> row(String sql, List<?> params) {
         Object row = getJdbi().withHandle(handle -> {
-            Query query = handle.createQuery(sql);
+            Query query = handle.createQuery(sql).attachToHandleForCleanup();
             if (params != null && !params.isEmpty()) {
                 for (int i = 0; i < params.size(); i++) {
                     query.bind(i, params.get(i));  // 通过索引绑定参数
@@ -202,16 +206,18 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
 
     @Override
     public List<Map<String, Object>> query(String sql, Map<String, ?> params) {
-        return getJdbi().withHandle(handle -> handle.createQuery(sql)
-                .bindMap(params)
-                .map(getRowMapper())
-                .list());
+        return getJdbi().withHandle(handle ->
+                handle.createQuery(sql)
+                        .attachToHandleForCleanup()
+                        .bindMap(params)
+                        .map(getRowMapper())
+                        .list());
     }
 
     @Override
     public List<Map<String, Object>> query(String sql, List<?> params) {
         return getJdbi().withHandle(handle -> {
-            Query query = handle.createQuery(sql);
+            Query query = handle.createQuery(sql).attachToHandleForCleanup();
 
             if (params != null && !params.isEmpty()) {
                 for (int i = 0; i < params.size(); i++) {
@@ -225,15 +231,17 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
 
     @Override
     public Integer update(String sql, Map<String, ?> params) {
-        return getJdbi().withHandle(handle -> handle.createUpdate(sql)
-                .bindMap(params)
-                .execute());
+        return getJdbi().withHandle(handle ->
+                handle.createUpdate(sql)
+                        .attachToHandleForCleanup()
+                        .bindMap(params)
+                        .execute());
     }
 
     @Override
     public Integer update(String sql, List<?> params) {
         return getJdbi().withHandle(handle -> {
-            Update query = handle.createUpdate(sql);
+            Update query = handle.createUpdate(sql).attachToHandleForCleanup();
 
             if (params != null && !params.isEmpty()) {
                 for (int i = 0; i < params.size(); i++) {

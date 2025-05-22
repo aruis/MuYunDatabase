@@ -74,6 +74,12 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new MuYunDatabaseException(e.getMessage(), READ_METADATA_ERROR);
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -111,6 +117,12 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
         return indexList;
@@ -158,6 +170,12 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
