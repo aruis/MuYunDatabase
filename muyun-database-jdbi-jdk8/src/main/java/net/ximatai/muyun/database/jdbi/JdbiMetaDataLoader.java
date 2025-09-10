@@ -45,28 +45,46 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                 String databaseName = connection.getCatalog();
                 info.setName(databaseName);
 
-                try (ResultSet schemasRs = metaData.getSchemas()) {
-                    boolean flag = false;
-                    while (schemasRs.next()) {
-                        flag = true;
-                        info.addSchema(new DBSchema(schemasRs.getString("TABLE_SCHEM")));
-                    }
-
-                    if (!flag) {
-                        info.addSchema(new DBSchema(databaseName));
-                    }
-                }
-
-                try (ResultSet tablesRs = metaData.getTables(null, "%", "%", new String[]{"TABLE"})) {
-                    while (tablesRs.next()) {
-                        String tableName = tablesRs.getString("TABLE_NAME");
-                        String schema = tablesRs.getString("TABLE_SCHEM");
-                        if (schema == null) {
-                            schema = databaseName;
+                if (info.getDatabaseType().equals(DBInfo.Type.MYSQL)) { // mysql 没有 schema 的概念，其本质是 database
+                    handle.createQuery("show databases;")
+                            .attachToHandleForCleanup()
+                            .mapToMap()
+                            .stream()
+                            .forEach(map -> {
+                                info.addSchema(new DBSchema((String) map.get("database")));
+                            });
+                } else {
+                    try (ResultSet schemasRs = metaData.getSchemas()) {
+                        boolean flag = false;
+                        while (schemasRs.next()) {
+                            flag = true;
+                            info.addSchema(new DBSchema(schemasRs.getString("TABLE_SCHEM")));
                         }
 
-                        DBTable table = new DBTable(this).setName(tableName).setSchema(schema);
-                        info.getSchema(schema).addTable(table);
+                        if (!flag) {
+                            info.addSchema(new DBSchema(databaseName));
+                        }
+                    }
+                }
+                if (info.getDatabaseType().equals(DBInfo.Type.MYSQL)) {
+                    for (DBSchema schema : info.getSchemas()) {
+                        try (ResultSet tablesRs = metaData.getTables(schema.getName(), "%", "%", new String[]{"TABLE"})) {
+                            while (tablesRs.next()) {
+                                String tableName = tablesRs.getString("TABLE_NAME");
+                                String schemaName = schema.getName();
+                                DBTable table = new DBTable(this).setName(tableName).setSchema(schemaName);
+                                info.getSchema(schemaName).addTable(table);
+                            }
+                        }
+                    }
+                } else {
+                    try (ResultSet tablesRs = metaData.getTables(null, "%", "%", new String[]{"TABLE"})) {
+                        while (tablesRs.next()) {
+                            String tableName = tablesRs.getString("TABLE_NAME");
+                            String schemaName = tablesRs.getString("TABLE_SCHEM");
+                            DBTable table = new DBTable(this).setName(tableName).setSchema(schemaName);
+                            info.getSchema(schemaName).addTable(table);
+                        }
                     }
                 }
 

@@ -46,11 +46,15 @@ public class DBInfo {
                 .orElse(null);
     }
 
+    public Set<DBSchema> getSchemas() {
+        return schemas;
+    }
+
     public String getTypeName() {
         return typeName;
     }
 
-    private Type getDatabaseType() {
+    public Type getDatabaseType() {
         String dbName = getTypeName().toUpperCase();
         switch (dbName) {
             case "POSTGRESQL":
