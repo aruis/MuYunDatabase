@@ -150,6 +150,16 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
     }
 
     @Override
+    public int insert(String sql, Map<String, ?> params) {
+        return getJdbi().withHandle(handle ->
+                handle.createUpdate(sql)
+                        .attachToHandleForCleanup()
+                        .bindMap(params)
+                        .execute()
+        );
+    }
+
+    @Override
     public <T> T insert(String sql, Map<String, ?> params, String pk, Class<T> idType) {
         return getJdbi().withHandle(handle ->
                 handle.createUpdate(sql)

@@ -8,7 +8,7 @@ plugins {
 allprojects {
     group = "net.ximatai.muyun.database"
 //    version = "1.0.0-SNAPSHOT"
-    version = "1.25.2"
+    version = "1.25.3"
 
     repositories {
         maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven") }
@@ -37,6 +37,7 @@ subprojects {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
                 pom {
+                    name = "MuYun Database"
                     description =
                         "A lightweight database wrapper based on Jdbi, enabling incremental table and column creation while providing recommended CRUD functions."
                     url = "https://github.com/ximatai/MuYunDatabase"

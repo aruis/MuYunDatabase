@@ -62,7 +62,13 @@ public interface IDatabaseOperations {
     default String insertItem(String schema, String tableName, Map<String, ?> params) {
         DBTable table = getDBInfo().getSchema(schema).getTable(tableName);
         Map<String, ?> transformed = transformDataForDB(table, params);
-        return this.insert(buildInsertSql(schema, tableName, transformed), transformed, "id", String.class);
+
+        if (params.containsKey("id") || params.containsKey("ID")) {
+            this.insert(buildInsertSql(schema, tableName, transformed), transformed);
+            return params.get("id") != null ? (String) params.get("id") : (String) params.get("ID");
+        } else {
+            return this.insert(buildInsertSql(schema, tableName, transformed), transformed, "id", String.class);
+        }
     }
 
     default List<String> insertList(String schema, String tableName, List<? extends Map<String, ?>> list) {
@@ -98,6 +104,8 @@ public interface IDatabaseOperations {
     }
 
     <T> T insert(String sql, Map<String, ?> params, String pk, Class<T> idType);
+
+    int insert(String sql, Map<String, ?> params);
 
     <T> List<T> batchInsert(String sql, List<? extends Map<String, ?>> paramsList, String pk, Class<T> idType);
 
