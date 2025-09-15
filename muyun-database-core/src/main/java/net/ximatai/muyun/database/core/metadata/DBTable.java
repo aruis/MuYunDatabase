@@ -46,12 +46,12 @@ public class DBTable extends TableBase {
         if (column == null) {
             return false;
         }
-        return getColumn(column.toLowerCase()) != null;
+        return getColumn(column) != null;
     }
 
     public DBColumn getColumn(String column) {
         Objects.requireNonNull(column);
-        return getColumnMap().get(column.toLowerCase());
+        return getColumnMap().get(column);
     }
 
     public void resetColumns() {
