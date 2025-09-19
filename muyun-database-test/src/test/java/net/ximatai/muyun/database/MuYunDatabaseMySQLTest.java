@@ -14,7 +14,7 @@ public class MuYunDatabaseMySQLTest extends MuYunDatabaseBaseTest {
 //    private static final JdbcDatabaseContainer postgresContainer = new MySQLContainer("mysql:8.4.5")
     private static final JdbcDatabaseContainer container = new MySQLContainer()
             .withDatabaseName("testdb")
-            .withUsername("testuser")
+            .withUsername("root")
             .withPassword("testpass");
 
     @Override

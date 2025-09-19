@@ -12,7 +12,6 @@ import net.ximatai.muyun.database.jdbi.JdbiDatabaseOperations;
 import net.ximatai.muyun.database.jdbi.JdbiMetaDataLoader;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.statement.MetaData;
 import org.jdbi.v3.core.statement.Slf4JSqlLogger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +22,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Date;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -118,8 +115,6 @@ public abstract class MuYunDatabaseBaseTest {
 
     @Test
     void testTableBuilderChangeLength() {
-        String schema = loader.getDBInfo().getDefaultSchemaName();
-
         TableWrapper basic = TableWrapper.withName("basic")
                 .setPrimaryKey(getPrimaryKey())
                 .setComment("测试表")
@@ -139,7 +134,7 @@ public abstract class MuYunDatabaseBaseTest {
                 "d_date", "2024-01-01"
         );
 
-        String id = db.insertItem(schema, "basic", body);
+        String id = db.insertItem("basic", body);
 
         TableWrapper basic2 = TableWrapper.withName("basic")
                 .addColumn(Column.of("v_name").setLength(12).setIndexed().setComment("名称").setDefaultValue("test"));
@@ -155,8 +150,40 @@ public abstract class MuYunDatabaseBaseTest {
     }
 
     @Test
+    void testTableBuilderWithoutDefaultSchema() {
+        String schema = "just_a_test";
+        TableWrapper basic = TableWrapper.withName("basic")
+                .setSchema(schema)
+                .setPrimaryKey(getPrimaryKey())
+                .setComment("测试表")
+                .addColumn(Column.of("v_name").setLength(20).setIndexed().setComment("名称").setDefaultValue("test"))
+                .addColumn(Column.of("i_age").setComment("年龄"))
+                .addColumn(Column.of("n_price").setPrecision(10).setScale(2))
+                .addColumn("b_flag")
+                .addColumn("d_date")
+                .addColumn(Column.of("t_create").setDefaultValue("CURRENT_TIMESTAMP"));
+
+        new TableBuilder(db).build(basic);
+
+        DBInfo info = loader.getDBInfo();
+
+        DBTable table = info.getSchema(schema).getTable("basic");
+
+        assertNotNull(table);
+
+        assertTrue(table.contains("id"));
+        assertTrue(table.contains("v_name"));
+        assertTrue(table.contains("b_flag"));
+        assertTrue(table.contains("i_age"));
+
+        assertTrue(table.getColumn("id").isPrimaryKey());
+
+        tableCreated = true;
+    }
+
+    @Test
     void testSimpleInsert() {
-        String schema = loader.getDBInfo().getDefaultSchemaName();
+
         Map body = Map.of("v_name", "test_name",
                 "i_age", 5,
                 "b_flag", true,
@@ -164,10 +191,10 @@ public abstract class MuYunDatabaseBaseTest {
                 "d_date", "2024-01-01"
         );
 
-        String id = db.insertItem(schema, "basic", body);
+        String id = db.insertItem("basic", body);
         assertNotNull(id);
 
-        Map<String, Object> item = db.getItem(schema, "basic", id);
+        Map<String, Object> item = db.getItem("basic", id);
 
         assertNotNull(item);
         assertEquals("test_name", item.get("v_name"));
@@ -193,7 +220,7 @@ public abstract class MuYunDatabaseBaseTest {
                 "d_date", "2024-01-01"
         );
 
-        List<String> ids = db.insertList(schema, "basic", List.of(body, body2));
+        List<String> ids = db.insertList("basic", List.of(body, body2));
 
         assertNotNull(ids);
         assertEquals(2, ids.size());
@@ -201,7 +228,6 @@ public abstract class MuYunDatabaseBaseTest {
 
     @Test
     void testUpdate() {
-        String schema = loader.getDBInfo().getDefaultSchemaName();
         Map body = Map.of("v_name", "test_name",
                 "i_age", 5,
                 "b_flag", true,
@@ -209,25 +235,24 @@ public abstract class MuYunDatabaseBaseTest {
                 "d_date", "2024-01-01"
         );
 
-        String id = db.insertItem(schema, "basic", body);
+        String id = db.insertItem("basic", body);
         assertNotNull(id);
 
-        Map<String, Object> item = db.getItem(schema, "basic", id);
+        Map<String, Object> item = db.getItem("basic", id);
 
         assertEquals("test_name", item.get("v_name"));
 
-        db.updateItem(schema, "basic", Map.of(
+        db.updateItem("basic", Map.of(
                 "id", id,
                 "v_name", "test_name2"));
 
-        item = db.getItem(schema, "basic", id);
+        item = db.getItem("basic", id);
 
         assertEquals("test_name2", item.get("v_name"));
     }
 
     @Test
     void testDelete() {
-        String schema = loader.getDBInfo().getDefaultSchemaName();
         Map body = Map.of("v_name", "test_name",
                 "i_age", 5,
                 "b_flag", true,
@@ -235,20 +260,19 @@ public abstract class MuYunDatabaseBaseTest {
                 "d_date", "2024-01-01"
         );
 
-        String id = db.insertItem(schema, "basic", body);
+        String id = db.insertItem("basic", body);
         assertNotNull(id);
 
-        Integer deleteSize = db.deleteItem(schema, "basic", id);
+        Integer deleteSize = db.deleteItem("basic", id);
         assertEquals(1, deleteSize);
 
-        Map<String, Object> item = db.getItem(schema, "basic", id);
+        Map<String, Object> item = db.getItem("basic", id);
 
         assertNull(item);
     }
 
     @Test
     void testQuery() {
-        String schema = loader.getDBInfo().getDefaultSchemaName();
         Map body = Map.of("v_name", "test_name_x",
                 "i_age", 5,
                 "b_flag", true,
@@ -256,7 +280,7 @@ public abstract class MuYunDatabaseBaseTest {
                 "d_date", "2024-01-01"
         );
 
-        String id = db.insertItem(schema, "basic", body);
+        String id = db.insertItem("basic", body);
 
         List<Map<String, Object>> queried = db.query("select * from basic where id = ?", List.of(id));
 

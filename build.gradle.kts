@@ -8,7 +8,7 @@ plugins {
 allprojects {
     group = "net.ximatai.muyun.database"
 //    version = "1.0.0-SNAPSHOT"
-    version = "1.25.4"
+    version = "1.25.5"
 
     repositories {
         maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven") }
@@ -67,15 +67,6 @@ subprojects {
             maven {
                 url = uri(layout.buildDirectory.dir("repo"))
             }
-
-//            maven {
-//                url = uri("http://192.168.3.19:8081/repository/maven-snapshots/")
-//                isAllowInsecureProtocol = true
-//                credentials {
-//                    username = findProperty("office19.maven.username").toString()
-//                    password = findProperty("office19.maven.password").toString()
-//                }
-//            }
         }
     }
 

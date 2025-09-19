@@ -64,9 +64,9 @@ public class TableBuilder {
 
         if (wrapper.getComment() != null) {
             if (getDatabaseType().equals(POSTGRESQL)) {
-                db.execute("COMMENT ON table " + schema + "." + name + " is '" + wrapper.getComment() + "'");
+                db.execute("comment on table " + schema + "." + name + " is '" + wrapper.getComment() + "'");
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("ALTER TABLE " + schema + "." + name + " COMMENT '" + wrapper.getComment() + "'");
+                db.execute("alter table " + schema + "." + name + " comment '" + wrapper.getComment() + "'");
             }
         }
 
@@ -128,7 +128,7 @@ public class TableBuilder {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " type " + type + length);
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + length);
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + length);
             }
         }
 
@@ -148,9 +148,9 @@ public class TableBuilder {
                 db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " set default " + defaultValue);
             } else if (getDatabaseType().equals(MYSQL)) {
                 if ("AUTO_INCREMENT".equals(defaultValue)) {
-                    db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + " " + defaultValue);
+                    db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + " " + defaultValue);
                 } else {
-                    db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + length + " DEFAULT " + defaultValue);
+                    db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + length + " DEFAULT " + defaultValue);
                 }
 
             }
@@ -161,8 +161,8 @@ public class TableBuilder {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("comment on column " + dbTable.getSchema() + "." + dbTable.getName() + "." + name + " is '" + comment + "'");
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + length + " COMMENT '" + comment + "'");
-//                ALTER TABLE public.basic MODIFY COLUMN id BIGINT COMMENT '这里是你的注释内容';
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + length + " COMMENT '" + comment + "'");
+//                ALTER TABLE public.basic modify COLUMN id BIGINT COMMENT '这里是你的注释内容';
             }
 
         }
@@ -172,7 +172,7 @@ public class TableBuilder {
                 String flag = nullable ? "drop" : "set";
                 db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " " + flag + " not null");
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " MODIFY column " + name + " " + type + " " + (nullable ? "null" : "not null"));
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + " " + (nullable ? "null" : "not null"));
             }
 
         }

@@ -3,6 +3,7 @@ package net.ximatai.muyun.database.jdbi;
 import net.ximatai.muyun.database.core.IDatabaseOperations;
 import net.ximatai.muyun.database.core.IMetaDataLoader;
 import net.ximatai.muyun.database.core.metadata.DBColumn;
+import net.ximatai.muyun.database.core.metadata.DBInfo;
 import net.ximatai.muyun.database.core.metadata.DBTable;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.mapper.MapMapper;
@@ -37,6 +38,16 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
     private Jdbi jdbi;
     private JdbiMetaDataLoader metaDataLoader;
     private RowMapper rowMapper = new MapMapper();
+
+    private DBInfo dbInfo;
+
+    @Override
+    public DBInfo getDBInfo() {
+        if (dbInfo == null) {
+            dbInfo = getMetaDataLoader().getDBInfo();
+        }
+        return dbInfo;
+    }
 
     public RowMapper getRowMapper() {
         return rowMapper;

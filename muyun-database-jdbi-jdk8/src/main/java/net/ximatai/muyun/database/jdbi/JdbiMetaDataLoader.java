@@ -23,6 +23,8 @@ import static net.ximatai.muyun.database.core.exception.MuYunDatabaseException.T
 
 public class JdbiMetaDataLoader implements IMetaDataLoader {
 
+    private DBInfo info;
+
     private Jdbi jdbi;
 
     public Jdbi getJdbi() {
@@ -31,11 +33,11 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
 
     public JdbiMetaDataLoader(Jdbi jdbi) {
         this.jdbi = jdbi;
+        initInfo();
     }
 
-    @Override
-    public DBInfo getDBInfo() {
-        return getJdbi().withHandle(handle -> {
+    private void initInfo() {
+        info = getJdbi().withHandle(handle -> {
             Connection connection = handle.getConnection();
             try {
                 DatabaseMetaData metaData = connection.getMetaData();
@@ -66,22 +68,21 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                         }
                     }
                 }
-                if (info.getDatabaseType().equals(DBInfo.Type.MYSQL)) {
-                    for (DBSchema schema : info.getSchemas()) {
-                        try (ResultSet tablesRs = metaData.getTables(schema.getName(), "%", "%", new String[]{"TABLE"})) {
-                            while (tablesRs.next()) {
-                                String tableName = tablesRs.getString("TABLE_NAME");
-                                String schemaName = schema.getName();
-                                DBTable table = new DBTable(this).setName(tableName).setSchema(schemaName);
-                                info.getSchema(schemaName).addTable(table);
-                            }
-                        }
+
+                for (DBSchema schema : info.getSchemas()) {
+                    String catalog = null;
+                    String schemaPattern = null;
+
+                    if (info.getDatabaseType().equals(DBInfo.Type.MYSQL)) {
+                        catalog = schema.getName();
+                    } else {
+                        schemaPattern = schema.getName();
                     }
-                } else {
-                    try (ResultSet tablesRs = metaData.getTables(null, "%", "%", new String[]{"TABLE"})) {
+
+                    try (ResultSet tablesRs = metaData.getTables(catalog, schemaPattern, "%", new String[]{"TABLE"})) {
                         while (tablesRs.next()) {
                             String tableName = tablesRs.getString("TABLE_NAME");
-                            String schemaName = tablesRs.getString("TABLE_SCHEM");
+                            String schemaName = schema.getName();
                             DBTable table = new DBTable(this).setName(tableName).setSchema(schemaName);
                             info.getSchema(schemaName).addTable(table);
                         }
@@ -97,13 +98,26 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
     }
 
     @Override
+    public DBInfo getDBInfo() {
+        return info;
+    }
+
+    @Override
     public List<DBIndex> getIndexList(String schema, String table) {
         List<DBIndex> indexList = new ArrayList<>();
         jdbi.useHandle(handle -> {
             Connection connection = handle.getConnection();
             try {
                 DatabaseMetaData metaData = connection.getMetaData();
-                try (ResultSet rs = metaData.getIndexInfo(null, schema, table, false, false)) {
+                String catalog = null;
+                String schemaPattern = null;
+                if (info.getDatabaseType().equals(DBInfo.Type.MYSQL)) {
+                    catalog = schema;
+                } else {
+                    schemaPattern = schema;
+                }
+
+                try (ResultSet rs = metaData.getIndexInfo(catalog, schemaPattern, table, false, false)) {
                     while (rs.next()) {
                         String indexName = rs.getString("INDEX_NAME");
                         if (indexName.endsWith("_pkey")) { // 主键索引不参与
@@ -142,7 +156,14 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
             Connection connection = handle.getConnection();
             try {
                 DatabaseMetaData metaData = connection.getMetaData();
-                try (ResultSet rs = metaData.getColumns(null, schema, table, null)) {
+                String catalog = null;
+                String schemaPattern = null;
+                if (info.getDatabaseType().equals(DBInfo.Type.MYSQL)) {
+                    catalog = schema;
+                } else {
+                    schemaPattern = schema;
+                }
+                try (ResultSet rs = metaData.getColumns(catalog, schemaPattern, table, null)) {
                     while (rs.next()) {
                         DBColumn column = new DBColumn();
                         column.setName(rs.getString("COLUMN_NAME"));
@@ -164,7 +185,7 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                 }
 
                 // Primary keys
-                try (ResultSet rs = metaData.getPrimaryKeys(null, schema, table)) {
+                try (ResultSet rs = metaData.getPrimaryKeys(catalog, schemaPattern, table)) {
                     while (rs.next()) {
                         String primaryKeyColumn = rs.getString("COLUMN_NAME");
                         DBColumn column = columnMap.get(primaryKeyColumn);

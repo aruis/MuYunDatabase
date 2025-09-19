@@ -17,8 +17,10 @@ public interface IDatabaseOperations {
 
     IMetaDataLoader getMetaDataLoader();
 
-    default DBInfo getDBInfo() {
-        return getMetaDataLoader().getDBInfo();
+    DBInfo getDBInfo();
+
+    default String getDefaultSchemaName() {
+        return getDBInfo().getDefaultSchemaName();
     }
 
     default Map<String, ?> transformDataForDB(DBTable dbTable, Map<String, ?> data) {
@@ -59,6 +61,10 @@ public interface IDatabaseOperations {
         return "update " + schema + "." + tableName + " set " + setClause + " where " + pk + " = :" + pk;
     }
 
+    default String insertItem(String tableName, Map<String, ?> params) {
+        return this.insertItem(getDefaultSchemaName(), tableName, params);
+    }
+
     default String insertItem(String schema, String tableName, Map<String, ?> params) {
         DBTable table = getDBInfo().getSchema(schema).getTable(tableName);
         Map<String, ?> transformed = transformDataForDB(table, params);
@@ -69,6 +75,10 @@ public interface IDatabaseOperations {
         } else {
             return this.insert(buildInsertSql(schema, tableName, transformed), transformed, "id", String.class);
         }
+    }
+
+    default List<String> insertList(String tableName, List<? extends Map<String, ?>> list) {
+        return this.insertList(getDefaultSchemaName(), tableName, list);
     }
 
     default List<String> insertList(String schema, String tableName, List<? extends Map<String, ?>> list) {
@@ -83,10 +93,18 @@ public interface IDatabaseOperations {
         return this.batchInsert(buildInsertSql(schema, tableName, transformedList.get(0)), transformedList, "id", String.class);
     }
 
+    default Integer updateItem(String tableName, Map<String, ?> params) {
+        return this.updateItem(getDefaultSchemaName(), tableName, params);
+    }
+
     default Integer updateItem(String schema, String tableName, Map<String, ?> params) {
         DBTable table = getDBInfo().getSchema(schema).getTable(tableName);
         Map<String, ?> transformed = transformDataForDB(table, params);
         return this.update(buildUpdateSql(schema, tableName, transformed, "id"), transformed);
+    }
+
+    default Integer deleteItem(String tableName, String id) {
+        return this.deleteItem(getDefaultSchemaName(), tableName, id);
     }
 
     default Integer deleteItem(String schema, String tableName, String id) {
@@ -94,6 +112,10 @@ public interface IDatabaseOperations {
         Objects.requireNonNull(dbTable);
 
         return this.delete("DELETE FROM " + schema + "." + tableName + " WHERE id=:id", Collections.singletonMap("id", id));
+    }
+
+    default Map<String, Object> getItem(String tableName, String id) {
+        return this.getItem(getDefaultSchemaName(), tableName, id);
     }
 
     default Map<String, Object> getItem(String schema, String tableName, String id) {

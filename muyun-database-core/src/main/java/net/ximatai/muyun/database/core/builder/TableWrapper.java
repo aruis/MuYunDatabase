@@ -34,7 +34,8 @@ public class TableWrapper extends TableBase {
     }
 
     public TableWrapper setInherit(TableBase inherit) {
-        this.inherits = new ArrayList<>(inherits);
+        this.inherits = new ArrayList<>();
+        this.inherits.add(inherit);
         return this;
     }
 
