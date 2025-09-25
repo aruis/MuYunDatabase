@@ -1,6 +1,7 @@
 package net.ximatai.muyun.database.core.builder;
 
 public enum ColumnType {
+    UNKNOWN,
     VARCHAR,
     INT,
     BIGINT,

@@ -2,7 +2,24 @@ package net.ximatai.muyun.database.core.builder;
 
 public final class PredefinedColumn {
 
-    public static final class Id {
+    public enum Id {
+        CUSTOM,
+        POSTGRES,
+        MYSQL;
+
+        public Column toColumn() {
+            switch (this) {
+                case POSTGRES:
+                    return Ids.POSTGRES;
+                case MYSQL:
+                    return Ids.MYSQL;
+                default:
+                    throw new IllegalArgumentException("Unsupported id type: " + this);
+            }
+        }
+    }
+
+    public static final class Ids {
         public static final Column POSTGRES = new Column("id")
                 .setPrimaryKey()
                 .setType(ColumnType.VARCHAR)

@@ -1,6 +1,7 @@
 package net.ximatai.muyun.database.core.builder;
 
 import net.ximatai.muyun.database.core.IDatabaseOperations;
+import net.ximatai.muyun.database.core.annotation.AnnotationProcessor;
 import net.ximatai.muyun.database.core.exception.MuYunDatabaseException;
 import net.ximatai.muyun.database.core.metadata.DBColumn;
 import net.ximatai.muyun.database.core.metadata.DBIndex;
@@ -24,6 +25,11 @@ public class TableBuilder {
     public TableBuilder(IDatabaseOperations db) {
         this.db = db;
         this.info = db.getDBInfo();
+    }
+
+    public boolean build(Class<?> entityClass) {
+        TableWrapper wrapper = AnnotationProcessor.fromEntityClass(entityClass);
+        return build(wrapper);
     }
 
     public boolean build(TableWrapper wrapper) {
@@ -101,7 +107,11 @@ public class TableBuilder {
         ColumnType dataType = column.getType();
         String type = getColumnTypeTransform().transform(dataType);
 
-        Objects.requireNonNull(type, "column: " + column + " type not provided");
+        if (ColumnType.UNKNOWN.name().equals(type)) {
+            throw new MuYunDatabaseException("column: " + column + " type not provided");
+        } else {
+            Objects.requireNonNull(type, "column: " + column + " type not provided");
+        }
 
         Object defaultValue = column.getDefaultValue();
         String comment = column.getComment();
