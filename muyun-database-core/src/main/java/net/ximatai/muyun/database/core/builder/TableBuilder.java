@@ -146,6 +146,16 @@ public class TableBuilder {
             db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " add primary key (" + name + ")");
         }
 
+        if (dbColumn.isNullable() != nullable) {
+            if (getDatabaseType().equals(POSTGRESQL)) {
+                String flag = nullable ? "drop" : "set";
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " " + flag + " not null");
+            } else if (getDatabaseType().equals(MYSQL)) {
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + " " + (nullable ? "null" : "not null"));
+            }
+
+        }
+
         if (!dbColumn.isSequence() && !Objects.equals(dbColumn.getDefaultValue(), defaultValue)) {
             if ("varchar".equalsIgnoreCase(type) && defaultValue instanceof String) {
                 String value = defaultValue.toString();
@@ -164,7 +174,6 @@ public class TableBuilder {
                 }
 
             }
-
         }
 
         if (comment != null && !Objects.equals(dbColumn.getDescription(), comment)) {
@@ -173,16 +182,6 @@ public class TableBuilder {
             } else if (getDatabaseType().equals(MYSQL)) {
                 db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + length + " COMMENT '" + comment + "'");
 //                ALTER TABLE public.basic modify COLUMN id BIGINT COMMENT '这里是你的注释内容';
-            }
-
-        }
-
-        if (dbColumn.isNullable() != nullable) {
-            if (getDatabaseType().equals(POSTGRESQL)) {
-                String flag = nullable ? "drop" : "set";
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " " + flag + " not null");
-            } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + " " + (nullable ? "null" : "not null"));
             }
 
         }

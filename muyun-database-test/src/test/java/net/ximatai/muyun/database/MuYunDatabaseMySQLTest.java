@@ -11,6 +11,8 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,5 +58,10 @@ public class MuYunDatabaseMySQLTest extends MuYunDatabaseBaseTest {
         assertTrue(table.contains("price"));
 
         assertTrue(table.getColumn("id").isPrimaryKey());
+
+        String id = db.insertItem("test_entity", Map.of("name", "test"));
+
+        assertNotNull(id);
+
     }
 }

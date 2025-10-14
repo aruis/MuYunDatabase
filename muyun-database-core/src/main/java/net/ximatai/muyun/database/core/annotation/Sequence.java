@@ -1,7 +1,5 @@
 package net.ximatai.muyun.database.core.annotation;
 
-import net.ximatai.muyun.database.core.builder.PredefinedColumn;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -9,9 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Id {
+public @interface Sequence {
     String name() default "";
-
-    PredefinedColumn.Id value() default PredefinedColumn.Id.CUSTOM;
-
 }

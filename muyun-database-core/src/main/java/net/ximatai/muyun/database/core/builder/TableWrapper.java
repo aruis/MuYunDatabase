@@ -45,6 +45,7 @@ public class TableWrapper extends TableBase {
     }
 
     public TableWrapper setPrimaryKey(Column column) {
+        column.setPrimaryKey();
         primaryKey = column;
         return this;
     }

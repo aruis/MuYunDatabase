@@ -92,17 +92,20 @@ public class AnnotationProcessor {
                     }
                 }
 
-                // 处理Id注解
-                if (idAnnotation != null) {
-                    tableWrapper.setPrimaryKey(column);
-                }
-
-                // 处理Indexed注解
                 if (field.isAnnotationPresent(Indexed.class)) {
                     column.setIndexed();
                 }
 
-                tableWrapper.addColumn(column);
+                if (field.isAnnotationPresent(Sequence.class)) {
+                    column.setSequence();
+                }
+
+                if (idAnnotation != null) {
+                    tableWrapper.setPrimaryKey(column);
+                } else {
+                    tableWrapper.addColumn(column);
+                }
+
             }
         }
 
