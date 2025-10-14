@@ -5,8 +5,27 @@ import net.ximatai.muyun.database.core.builder.PredefinedColumn;
 import net.ximatai.muyun.database.core.builder.TableWrapper;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AnnotationProcessor {
+    public static List<Field> getAllFields(Class<?> type) {
+
+        List<Field> fields = new ArrayList<>(Arrays.asList(type.getDeclaredFields()));
+
+        Class<?> superClass = type.getSuperclass();
+        if (superClass != null && superClass != Object.class) {
+            List<Field> superFields = getAllFields(superClass);
+            for (Field field : superFields) {
+                if (fields.stream().noneMatch(f -> f.getName().equals(field.getName()))) {
+                    fields.add(field);
+                }
+            }
+        }
+        return fields;
+    }
+
     public static TableWrapper fromEntityClass(Class<?> entityClass) {
 
         if (!entityClass.isAnnotationPresent(Table.class)) {
@@ -23,7 +42,7 @@ public class AnnotationProcessor {
         }
 
         // 处理所有字段
-        for (Field field : entityClass.getDeclaredFields()) {
+        for (Field field : getAllFields(entityClass)) {
             if (field.isAnnotationPresent(Column.class) || field.isAnnotationPresent(Id.class)) {
                 Column columnAnnotation = field.getAnnotation(Column.class);
                 Id idAnnotation = field.getAnnotation(Id.class);
