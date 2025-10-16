@@ -3,6 +3,7 @@ package net.ximatai.muyun.database;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.ximatai.muyun.database.core.builder.Column;
+import net.ximatai.muyun.database.core.builder.ColumnType;
 import net.ximatai.muyun.database.core.builder.TableBuilder;
 import net.ximatai.muyun.database.core.builder.TableWrapper;
 import net.ximatai.muyun.database.core.metadata.DBColumn;
@@ -341,4 +342,35 @@ public abstract class MuYunDatabaseBaseTest {
         assertFalse(connection.get().isClosed());
     }
 
+    @Test
+    void testModifyColumnTypeToText() {
+        TableWrapper basic = TableWrapper.withName("test_modify_column_type_to_text")
+                .setPrimaryKey(getPrimaryKey())
+                .addColumn(Column.of("v_name")
+                        .setLength(20)
+                        .setComment("名称")
+                        .setDefaultValue("test"));
+
+        new TableBuilder(db).build(basic);
+
+        Map body = Map.of("v_name", "abcd_efgh");
+
+        String id = db.insertItem("test_modify_column_type_to_text", body);
+
+        Map<String, Object> row = db.row("select * from test_modify_column_type_to_text where id = ?", id);
+
+        assertEquals("abcd_efgh", row.get("v_name"));
+
+        TableWrapper basicModify = TableWrapper.withName("test_modify_column_type_to_text")
+                .setPrimaryKey(getPrimaryKey())
+                .addColumn(Column.of("v_name")
+                        .setType(ColumnType.TEXT)
+                        .setComment("名称"));
+
+        new TableBuilder(db).build(basicModify);
+
+        Map<String, Object> row2 = db.row("select * from test_modify_column_type_to_text where id = ?", id);
+
+        assertEquals("abcd_efgh", row2.get("v_name"));
+    }
 }

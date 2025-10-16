@@ -3,6 +3,7 @@ package net.ximatai.muyun.database.core.builder;
 public enum ColumnType {
     UNKNOWN,
     VARCHAR,
+    TEXT,
     INT,
     BIGINT,
     BOOLEAN,

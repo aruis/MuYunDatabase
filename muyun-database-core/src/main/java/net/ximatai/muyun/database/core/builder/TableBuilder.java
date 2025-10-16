@@ -3,11 +3,7 @@ package net.ximatai.muyun.database.core.builder;
 import net.ximatai.muyun.database.core.IDatabaseOperations;
 import net.ximatai.muyun.database.core.annotation.AnnotationProcessor;
 import net.ximatai.muyun.database.core.exception.MuYunDatabaseException;
-import net.ximatai.muyun.database.core.metadata.DBColumn;
-import net.ximatai.muyun.database.core.metadata.DBIndex;
-import net.ximatai.muyun.database.core.metadata.DBInfo;
-import net.ximatai.muyun.database.core.metadata.DBSchema;
-import net.ximatai.muyun.database.core.metadata.DBTable;
+import net.ximatai.muyun.database.core.metadata.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -115,12 +111,7 @@ public class TableBuilder {
 
         Object defaultValue = column.getDefaultValue();
         String comment = column.getComment();
-        String length = column.getLength() == null ? "" : "(" + column.getLength() + ")";
-        if (column.getType().equals(ColumnType.NUMERIC)) {
-            if (column.getScale() != null && column.getPrecision() != null) {
-                length = "(" + column.getPrecision() + "," + column.getScale() + ")";
-            }
-        }
+        String length = getColumnLength(column);
 
         boolean sequence = column.isSequence();
         boolean nullable = column.isNullable();
@@ -134,7 +125,7 @@ public class TableBuilder {
 
         DBColumn dbColumn = dbTable.getColumn(name);
 
-        if (column.getLength() != null && !column.getLength().equals(dbColumn.getLength())) {
+        if (!type.equals(dbColumn.getType()) || column.getLength() != null && !column.getLength().equals(dbColumn.getLength())) {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " type " + type + length);
             } else if (getDatabaseType().equals(MYSQL)) {
@@ -198,6 +189,22 @@ public class TableBuilder {
         }
 
         return result;
+    }
+
+    private String getColumnLength(Column column) {
+        String length = column.getLength() == null ? "" : "(" + column.getLength() + ")";
+
+        if (column.getType().equals(ColumnType.TEXT)) {
+            return "";
+        }
+
+        if (column.getType().equals(ColumnType.NUMERIC)) {
+            if (column.getScale() != null && column.getPrecision() != null) {
+                return "(" + column.getPrecision() + "," + column.getScale() + ")";
+            }
+        }
+
+        return length;
     }
 
     private boolean checkAndBuildIndex(DBTable dbTable, Index index) {
