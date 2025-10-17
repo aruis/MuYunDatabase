@@ -140,9 +140,9 @@ public class TableBuilder {
         if (dbColumn.isNullable() != nullable) {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 String flag = nullable ? "drop" : "set";
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " " + flag + " not null");
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " alter column " + name + " " + flag + length + " not null");
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + " " + (nullable ? "null" : "not null"));
+                db.execute("alter table " + dbTable.getSchema() + "." + dbTable.getName() + " modify column " + name + " " + type + length + " " + (nullable ? "null" : "not null"));
             }
 
         }
