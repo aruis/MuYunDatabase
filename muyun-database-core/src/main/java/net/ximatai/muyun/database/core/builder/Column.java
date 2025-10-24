@@ -16,7 +16,7 @@ public class Column {
 
     public Column(String name) {
         this.name = name;
-        this.type = buildTypeWithColumnName(name);
+        this.type = ColumnType.autoTypeWithColumnName(name);
     }
 
     public static Column of(String name) {
@@ -150,43 +150,5 @@ public class Column {
     public Column setLength(Integer length) {
         this.length = length;
         return this;
-    }
-
-    ColumnType buildTypeWithColumnName(String name) {
-        ColumnType type = null;
-
-        if ("id".equals(name)) {
-            type = ColumnType.VARCHAR;
-        } else if ("pid".equals(name)) {
-            type = ColumnType.VARCHAR;
-        } else if (name.startsWith("v_")) {
-            type = ColumnType.VARCHAR;
-        } else if (name.startsWith("i_")) {
-            type = ColumnType.INT;
-        } else if (name.startsWith("b_")) {
-            type = ColumnType.BOOLEAN;
-        } else if (name.startsWith("t_")) {
-            type = ColumnType.TIMESTAMP;
-        } else if (name.startsWith("d_")) {
-            type = ColumnType.DATE;
-        } else if (name.startsWith("n_")) {
-            type = ColumnType.NUMERIC;
-        } else if (name.startsWith("id_")) {
-            type = ColumnType.VARCHAR;
-        } else if (name.startsWith("j_")) {
-            type = ColumnType.JSON;
-        } else if (name.startsWith("dict_")) {
-            type = ColumnType.VARCHAR;
-        } else if (name.startsWith("file_")) {
-            type = ColumnType.VARCHAR;
-        } else if (name.startsWith("files_")) {
-            type = ColumnType.VARCHAR_ARRAY;
-        } else if (name.startsWith("ids_")) {
-            type = ColumnType.VARCHAR_ARRAY;
-        } else if (name.startsWith("dicts_")) {
-            type = ColumnType.VARCHAR_ARRAY;
-        }
-
-        return type;
     }
 }

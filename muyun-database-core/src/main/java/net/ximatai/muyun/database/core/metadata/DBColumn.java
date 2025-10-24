@@ -1,5 +1,8 @@
 package net.ximatai.muyun.database.core.metadata;
 
+import net.ximatai.muyun.database.core.builder.Column;
+import net.ximatai.muyun.database.core.builder.ColumnType;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -112,6 +115,20 @@ public class DBColumn {
     }
 
     public void setLength(Integer length) {
-        this.length = length;
+        if (Integer.MAX_VALUE != length) { // 未设置长度的情况下，可能会读取到这个值
+            this.length = length;
+        }
+    }
+
+    public Column toColumn() {
+        Column column = Column.of(this.getName());
+        column.setComment(this.getDescription());
+        column.setType(ColumnType.valueOf(this.getType().toUpperCase()));
+        column.setDefaultValue(this.getDefaultValue());
+        column.setNullable(this.isNullable());
+        column.setPrimaryKey(this.isPrimaryKey());
+        column.setSequence(this.isSequence());
+        column.setLength(this.getLength());
+        return column;
     }
 }

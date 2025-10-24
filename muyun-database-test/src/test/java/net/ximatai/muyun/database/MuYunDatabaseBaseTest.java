@@ -373,4 +373,71 @@ public abstract class MuYunDatabaseBaseTest {
 
         assertEquals("abcd_efgh", row2.get("v_name"));
     }
+
+    @Test
+    void testInherit() {
+        String schema = "test";
+        TableWrapper basic = TableWrapper.withName("test_inherit_base")
+                .setSchema(schema)
+                .setPrimaryKey(getPrimaryKey())
+                .addColumn(Column.of("v_name")
+                        .setLength(20)
+                        .setComment("名称")
+                        .setDefaultValue("test"));
+
+        new TableBuilder(db).build(basic);
+
+        TableWrapper child = TableWrapper.withName("test_inherit_child")
+                .setSchema(schema)
+                .addColumn(Column.of("v_name2")
+                        .setLength(20)
+                        .setComment("名称")
+                        .setDefaultValue("test"))
+                .setInherit(basic);
+
+        new TableBuilder(db).build(child);
+
+        DBInfo info = loader.getDBInfo();
+
+        DBTable table = info.getSchema(schema).getTable("test_inherit_child");
+
+        assertTrue(table.contains("id"));
+        assertTrue(table.contains("v_name"));
+        assertTrue(table.contains("v_name2"));
+    }
+
+    @Test
+    void testInheritLater() {
+        String schema = "test";
+        TableWrapper basic = TableWrapper.withName("test_inherit_base")
+                .setSchema(schema)
+                .setPrimaryKey(getPrimaryKey())
+                .addColumn(Column.of("v_name")
+                        .setLength(20)
+                        .setComment("名称")
+                        .setDefaultValue("test"));
+
+        new TableBuilder(db).build(basic);
+
+        TableWrapper child = TableWrapper.withName("test_inherit_child")
+                .setSchema(schema)
+                .addColumn(Column.of("v_name2")
+                        .setLength(20)
+                        .setComment("名称")
+                        .setDefaultValue("test"));
+
+        new TableBuilder(db).build(child);
+
+        child.setInherit(basic);
+
+        new TableBuilder(db).build(child);
+
+        DBInfo info = loader.getDBInfo();
+
+        DBTable table = info.getSchema(schema).getTable("test_inherit_child");
+
+        assertTrue(table.contains("id"));
+        assertTrue(table.contains("v_name"));
+        assertTrue(table.contains("v_name2"));
+    }
 }
