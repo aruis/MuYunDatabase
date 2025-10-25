@@ -6,6 +6,7 @@ import net.ximatai.muyun.database.core.exception.MuYunDatabaseException;
 import net.ximatai.muyun.database.core.metadata.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.ximatai.muyun.database.core.metadata.DBInfo.Type.MYSQL;
 import static net.ximatai.muyun.database.core.metadata.DBInfo.Type.POSTGRESQL;
@@ -111,14 +112,19 @@ public class TableBuilder {
     }
 
     private void fillWrapperByInherits(DBTable dbTable, List<TableBase> inherits) {
+        AtomicBoolean isModify = new AtomicBoolean(false);
         inherits.forEach(inherit -> {
             DBTable table = info.getSchema(inherit.getSchema()).getTable(inherit.getName());
 
             table.getColumnMap().forEach((columnName, dbColumn) -> {
                 checkAndBuildColumn(dbTable, dbColumn.toColumn());
+                isModify.set(true);
             });
 
         });
+        if (isModify.get()) {
+            dbTable.resetColumns();
+        }
     }
 
     private boolean checkAndBuildColumn(DBTable dbTable, Column column) {

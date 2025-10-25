@@ -16,19 +16,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class JdbiDatabaseOperations implements IDatabaseOperations {
 
@@ -349,7 +344,7 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
 
         try {
             LocalDate localDate = LocalDate.parse(dateString.substring(0, 10), DATE_FORMATTER);
-            return Date.valueOf(localDate);
+            return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid date format: " + dateString);
         }
@@ -376,6 +371,8 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
             return (Timestamp) value;
         } else if ("".equals(value)) {
             return null;
+        } else if (value instanceof LocalDate) {
+            return Timestamp.valueOf(((LocalDate) value).atStartOfDay());
         } else if (value instanceof LocalDateTime) {
             return Timestamp.valueOf((LocalDateTime) value);
         } else if (value instanceof Date) {
