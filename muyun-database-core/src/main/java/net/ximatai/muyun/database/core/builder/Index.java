@@ -3,7 +3,8 @@ package net.ximatai.muyun.database.core.builder;
 import java.util.ArrayList;
 import java.util.List;
 
-class Index {
+public class Index {
+    private String name;
     private List<String> columns;
     private boolean unique;
 
@@ -24,5 +25,13 @@ class Index {
 
     public List<String> getColumns() {
         return columns;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

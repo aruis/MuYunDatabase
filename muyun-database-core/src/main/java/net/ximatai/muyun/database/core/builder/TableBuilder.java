@@ -238,9 +238,9 @@ public class TableBuilder {
     }
 
     private boolean checkAndBuildIndex(DBTable dbTable, Index index) {
-        List<String> columns = index.getColumns();
+        Set<String> columns = new HashSet<>(index.getColumns());
         List<DBIndex> indexList = dbTable.getIndexList();
-        Optional<DBIndex> dbIndexOptional = indexList.stream().filter(i -> new HashSet<>(i.getColumns()).equals(new HashSet<>(columns))).findFirst();
+        Optional<DBIndex> dbIndexOptional = indexList.stream().filter(i -> new HashSet<>(i.getColumns()).equals(columns)).findFirst();
 
         if (dbIndexOptional.isPresent()) {
             DBIndex dbIndex = dbIndexOptional.get();
@@ -252,18 +252,24 @@ public class TableBuilder {
 
         }
 
-        String indexName = dbTable.getName() + "_" + String.join("_", columns) + "_";
+        String indexName = dbTable.getName() + "_" + String.join("_", columns);
+
         String unique = "";
-        String nameSuffix = "index";
         if (index.isUnique()) {
             unique = "unique";
-            nameSuffix = "uindex";
+            indexName += "_uindex";
+        } else {
+            indexName += "_index";
+        }
+
+        if (index.getName() != null && !index.getName().isEmpty()) {
+            indexName = index.getName();
         }
 
         if (getDatabaseType().equals(POSTGRESQL)) {
-            db.execute("create " + unique + " index if not exists " + indexName + nameSuffix + " on " + dbTable.getSchemaDotTable() + "(" + String.join(",", columns) + ");");
+            db.execute("create " + unique + " index if not exists " + indexName + " on " + dbTable.getSchemaDotTable() + "(" + String.join(",", columns) + ");");
         } else if (getDatabaseType().equals(MYSQL)) {
-            db.execute("create " + unique + " index " + indexName + nameSuffix + " on " + dbTable.getSchemaDotTable() + "(" + String.join(",", columns) + ");");
+            db.execute("create " + unique + " index " + indexName + " on " + dbTable.getSchemaDotTable() + "(" + String.join(",", columns) + ");");
         }
 
         return true;

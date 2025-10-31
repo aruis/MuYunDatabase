@@ -1,6 +1,7 @@
 package net.ximatai.muyun.database.core.annotation;
 
 import net.ximatai.muyun.database.core.builder.ColumnType;
+import net.ximatai.muyun.database.core.builder.Index;
 import net.ximatai.muyun.database.core.builder.PredefinedColumn;
 import net.ximatai.muyun.database.core.builder.TableWrapper;
 
@@ -28,11 +29,11 @@ public class AnnotationProcessor {
 
     public static TableWrapper fromEntityClass(Class<?> entityClass) {
 
-        if (!entityClass.isAnnotationPresent(Table.class)) {
-            throw new IllegalArgumentException("Class must be annotated with @Table");
+        Table tableAnnotation = findTableAnnotation(entityClass);
+        if (tableAnnotation == null) {
+            throw new IllegalArgumentException("Class or its superclass must be annotated with @Table");
         }
 
-        Table tableAnnotation = entityClass.getAnnotation(Table.class);
         TableWrapper tableWrapper = TableWrapper.withName(tableAnnotation.name());
         if (!tableAnnotation.comment().isEmpty()) {
             tableWrapper.setComment(tableAnnotation.comment());
@@ -93,7 +94,13 @@ public class AnnotationProcessor {
                 }
 
                 if (field.isAnnotationPresent(Indexed.class)) {
-                    column.setIndexed();
+                    Indexed indexed = field.getAnnotation(Indexed.class);
+                    if (indexed.unique()) {
+                        column.setUnique();
+                    } else {
+                        column.setIndexed();
+                    }
+
                 }
 
                 if (field.isAnnotationPresent(Sequence.class)) {
@@ -109,6 +116,41 @@ public class AnnotationProcessor {
             }
         }
 
+        findAllCompositeIndex(entityClass).forEach(compositeIndex -> addCompositeIndexToTable(tableWrapper, compositeIndex));
+
         return tableWrapper;
+    }
+
+    private static List<CompositeIndex> findAllCompositeIndex(Class<?> clazz) {
+        List<CompositeIndex> indexes = new ArrayList<>();
+
+        while (clazz != null && clazz != Object.class) {
+            if (clazz.isAnnotationPresent(CompositeIndex.class)) {
+                indexes.add(clazz.getAnnotation(CompositeIndex.class));
+            }
+            if (clazz.isAnnotationPresent(CompositeIndexes.class)) {
+                indexes.addAll(Arrays.asList(clazz.getAnnotation(CompositeIndexes.class).value()));
+            }
+
+            clazz = clazz.getSuperclass();
+        }
+
+        return indexes;
+    }
+
+    private static Table findTableAnnotation(Class<?> clazz) {
+        while (clazz != null && clazz != Object.class) {
+            if (clazz.isAnnotationPresent(Table.class)) {
+                return clazz.getAnnotation(Table.class);
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return null;
+    }
+
+    private static void addCompositeIndexToTable(TableWrapper tableWrapper, CompositeIndex compositeIndex) {
+        Index index = new Index(Arrays.asList(compositeIndex.columns()), compositeIndex.unique());
+        index.setName(compositeIndex.name());
+        tableWrapper.addIndex(index);
     }
 }

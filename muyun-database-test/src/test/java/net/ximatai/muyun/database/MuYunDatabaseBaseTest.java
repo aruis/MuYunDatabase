@@ -7,6 +7,7 @@ import net.ximatai.muyun.database.core.builder.ColumnType;
 import net.ximatai.muyun.database.core.builder.TableBuilder;
 import net.ximatai.muyun.database.core.builder.TableWrapper;
 import net.ximatai.muyun.database.core.metadata.DBColumn;
+import net.ximatai.muyun.database.core.metadata.DBIndex;
 import net.ximatai.muyun.database.core.metadata.DBInfo;
 import net.ximatai.muyun.database.core.metadata.DBTable;
 import net.ximatai.muyun.database.jdbi.JdbiDatabaseOperations;
@@ -26,6 +27,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -440,4 +442,46 @@ public abstract class MuYunDatabaseBaseTest {
         assertTrue(table.contains("v_name"));
         assertTrue(table.contains("v_name2"));
     }
+
+    @Test
+    void testTableBuilderWithEntity() {
+
+        new TableBuilder(db).build(getEntityClass());
+
+        DBInfo info = loader.getDBInfo();
+
+        DBTable table = info.getDefaultSchema().getTable("test_entity");
+
+        assertNotNull(table);
+
+        assertTrue(table.contains("id"));
+        assertTrue(table.contains("name"));
+        assertTrue(table.contains("age"));
+        assertTrue(table.contains("price"));
+
+        assertTrue(table.getColumn("id").isPrimaryKey());
+
+        List<DBIndex> indexList = table.getIndexList();
+        assertTrue(indexList.stream()
+                .anyMatch(i -> i.getColumns().containsAll(Arrays.asList("name", "age")) && i.isUnique())
+        );
+
+        assertTrue(indexList.stream()
+                .anyMatch(i -> i.getColumns().containsAll(Arrays.asList("name", "flag")) && !i.isUnique())
+        );
+
+        assertTrue(indexList.stream()
+                .anyMatch(i -> i.getColumns().size() == 1 && i.getColumns().contains("flag") && !i.isUnique())
+        );
+
+        assertTrue(indexList.stream()
+                .anyMatch(i -> i.getColumns().size() == 1 && i.getColumns().contains("code") && i.isUnique())
+        );
+
+        String id = db.insertItem("test_entity", Map.of("name", "test"));
+
+        assertNotNull(id);
+    }
+
+    abstract Class<?> getEntityClass();
 }

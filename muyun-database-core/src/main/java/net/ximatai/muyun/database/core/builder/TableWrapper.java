@@ -50,6 +50,11 @@ public class TableWrapper extends TableBase {
         return this;
     }
 
+    public TableWrapper addIndex(Index index) {
+        indexes.add(index);
+        return this;
+    }
+
     public TableWrapper addIndex(String columnName) {
         this.addIndex(columnName, false);
         return this;
@@ -61,8 +66,7 @@ public class TableWrapper extends TableBase {
             throw new IllegalArgumentException("No such column: " + columnName);
         }
 
-        indexes.add(new Index(columnName, unique));
-        return this;
+        return addIndex(new Index(columnName, unique));
     }
 
     public TableWrapper addIndex(List<String> columns) {
