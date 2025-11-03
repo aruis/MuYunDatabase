@@ -529,6 +529,47 @@ public abstract class MuYunDatabaseBaseTest {
         assertNotNull(string);
     }
 
+    @Test
+    void testIndexChange() {
+        String schema = "test";
+        String baseTable = "a_table";
+        TableWrapper basic = TableWrapper.withName(baseTable)
+                .setSchema(schema)
+                .setPrimaryKey(getPrimaryKey())
+                .addColumn(Column.of("v_name")
+                        .setLength(20)
+                        .setComment("名称")
+                        .setDefaultValue("'test'"));
+
+        new TableBuilder(db).build(basic);
+
+        DBTable table = db.getDBInfo().getSchema(schema).getTable(baseTable);
+
+        assertTrue(table.getColumn("id").isPrimaryKey());
+        assertEquals(0, table.getIndexList().size());
+
+        basic.addIndex("v_name");
+
+        new TableBuilder(db).build(basic);
+
+        table = db.getDBInfo().getSchema(schema).getTable(baseTable);
+
+        assertEquals(1, table.getIndexList().size());
+        assertFalse(table.getIndexList().getFirst().isUnique());
+
+        basic.getIndexes().clear();
+
+        basic.addIndex("v_name", true);
+
+        new TableBuilder(db).build(basic);
+
+        table = db.getDBInfo().getSchema(schema).getTable(baseTable);
+
+        assertEquals(1, table.getIndexList().size());
+        assertTrue(table.getIndexList().getFirst().isUnique());
+
+    }
+
     abstract Class<?> getEntityClass();
 }
 

@@ -112,7 +112,7 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                 try (ResultSet rs = metaData.getIndexInfo(catalog, schemaPattern, table, false, false)) {
                     while (rs.next()) {
                         String indexName = rs.getString("INDEX_NAME");
-                        if (indexName.endsWith("_pkey")) { // 主键索引不参与
+                        if (indexName.endsWith("_pkey") || indexName.equalsIgnoreCase("PRIMARY")) { // 主键索引不参与
                             continue;
                         }
 

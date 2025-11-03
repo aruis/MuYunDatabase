@@ -241,7 +241,12 @@ public class TableBuilder {
             if (dbIndex.isUnique() == index.isUnique()) {
                 return false;
             } else {
-                db.execute("drop index " + dbTable.getSchema() + "." + dbIndex.getName() + ";");
+                if (getDatabaseType().equals(POSTGRESQL)) {
+                    db.execute("drop index " + dbTable.getSchema() + "." + dbIndex.getName() + ";");
+                } else {
+                    db.execute("drop index " + dbIndex.getName() + " on " + dbTable.getSchemaDotTable() + ";");
+                }
+
             }
 
         }
