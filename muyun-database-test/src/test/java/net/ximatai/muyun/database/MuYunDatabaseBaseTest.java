@@ -2,6 +2,9 @@ package net.ximatai.muyun.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.ximatai.muyun.database.core.annotation.Default;
+import net.ximatai.muyun.database.core.annotation.Id;
+import net.ximatai.muyun.database.core.annotation.Table;
 import net.ximatai.muyun.database.core.builder.Column;
 import net.ximatai.muyun.database.core.builder.ColumnType;
 import net.ximatai.muyun.database.core.builder.TableBuilder;
@@ -30,6 +33,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -507,5 +511,36 @@ public abstract class MuYunDatabaseBaseTest {
 
     }
 
+    @Test
+    void testTableBuilderWithEntityNoIdDefaultValue() {
+        new TableBuilder(db).build(TestEntityBaseNoIdDefaultValue.class);
+
+        DBInfo info = loader.getDBInfo();
+
+        DBTable table = info.getDefaultSchema().getTable("test_entity2");
+
+        assertNotNull(table);
+
+        assertTrue(table.contains("id"));
+        assertTrue(table.getColumn("id").isPrimaryKey());
+
+        String string = db.insertItem("test_entity2", Map.of("id", UUID.randomUUID().toString()));
+
+        assertNotNull(string);
+    }
+
     abstract Class<?> getEntityClass();
+}
+
+@Table(name = "test_entity2")
+class TestEntityBaseNoIdDefaultValue {
+
+    @Id
+    @net.ximatai.muyun.database.core.annotation.Column(length = 36)
+    public String id;
+
+    @Default.Varchar("test_name")
+    @net.ximatai.muyun.database.core.annotation.Column(length = 20, comment = "名称")
+    public String name;
+
 }

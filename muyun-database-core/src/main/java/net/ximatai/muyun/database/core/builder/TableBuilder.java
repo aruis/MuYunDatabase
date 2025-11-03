@@ -147,7 +147,13 @@ public class TableBuilder {
         boolean nullable = column.isNullable();
         boolean primaryKey = column.isPrimaryKey();
 
-        String baseColumnString = name + " " + type + length + (nullable ? " null " : " not null ") + ("AUTO_INCREMENT".equalsIgnoreCase(defaultValue) ? "" : " DEFAULT ") + defaultValue + (primaryKey ? " PRIMARY KEY " : "");
+        String defaultValueString = defaultValue == null ? "" : ("AUTO_INCREMENT".equalsIgnoreCase(defaultValue) ? "" : " DEFAULT ") + defaultValue;
+        String primaryKeyString = "";
+        if (defaultValueString.equalsIgnoreCase("AUTO_INCREMENT") && primaryKey) {
+            primaryKeyString = " PRIMARY KEY ";
+        }
+
+        String baseColumnString = name + " " + type + length + (nullable ? " null " : " not null ") + defaultValueString + primaryKeyString;
 
         if (!dbTable.contains(name)) {
             db.execute("alter table " + dbTable.getSchemaDotTable() + " add " + baseColumnString);
