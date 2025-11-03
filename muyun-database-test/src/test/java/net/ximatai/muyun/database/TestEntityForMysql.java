@@ -10,8 +10,7 @@ public class TestEntityForMysql extends TestEntityBase {
 
     @Id
     @Sequence
-    @Default.Express("AUTO_INCREMENT")
-    @Column(type = ColumnType.BIGINT)
+    @Column(type = ColumnType.BIGINT, defaultVal = @Default(express = "AUTO_INCREMENT"))
     public String id;
 
 }

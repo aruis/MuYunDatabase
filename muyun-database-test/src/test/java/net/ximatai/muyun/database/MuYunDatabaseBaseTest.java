@@ -539,8 +539,7 @@ class TestEntityBaseNoIdDefaultValue {
     @net.ximatai.muyun.database.core.annotation.Column(length = 36)
     public String id;
 
-    @Default.Varchar("test_name")
-    @net.ximatai.muyun.database.core.annotation.Column(length = 20, comment = "名称")
+    @net.ximatai.muyun.database.core.annotation.Column(length = 20, comment = "名称", defaultVal = @Default(varchar = "test_name"))
     public String name;
 
 }

@@ -27,4 +27,7 @@ public @interface Column {
     String comment() default "";
 
     String defaultValue() default "";
+
+    Default defaultVal() default @Default(unset = true);
 }
+

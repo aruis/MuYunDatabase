@@ -5,47 +5,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Default {
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Varchar {
-        String value();
-    }
 
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Bool {
-        boolean value();
-    }
+    boolean unset() default false;
 
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Number {
-        long value();
-    }
+    boolean nullVal() default false;
 
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Decimal {
-        double value();
-    }
+    String varchar() default "";
 
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Function {
-        String value();
-    }
+    boolean trueVal() default false;
 
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Express {
-        String value();
-    }
+    boolean falseVal() default false;
 
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Null {
-        boolean value() default true;
-    }
+    long number() default Long.MIN_VALUE;
 
+    double decimal() default Double.MIN_VALUE;
+
+    String function() default "";
+
+    String express() default "";
 }

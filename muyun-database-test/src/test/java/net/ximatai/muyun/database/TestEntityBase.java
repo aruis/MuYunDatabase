@@ -9,29 +9,24 @@ import java.util.Date;
 @CompositeIndex(columns = {"name", "flag"})
 public class TestEntityBase {
 
-    @Default.Varchar("test_name")
-    @Column(length = 20, comment = "名称")
+    @Column(length = 20, comment = "名称", defaultVal = @Default(varchar = "test_name"))
     public String name;
 
     @Indexed(unique = true)
     @Column(comment = "学号")
     public int code;
 
-    @Default.Number(12)
-    @Column(comment = "年龄")
+    @Column(comment = "年龄", defaultVal = @Default(number = 12))
     public int age;
 
-    @Default.Decimal(1.23)
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, defaultVal = @Default(decimal = 1.23))
     public double price;
 
-    @Default.Bool(true)
     @Indexed
-    @Column
+    @Column(defaultVal = @Default(trueVal = true))
     public boolean flag;
 
-    @Default.Express("CURRENT_TIMESTAMP")
-    @Column(name = "create_time")
+    @Column(name = "create_time", defaultVal = @Default(express = "CURRENT_TIMESTAMP"))
     public Date creatTime;
 
 }
