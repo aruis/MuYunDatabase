@@ -4,7 +4,7 @@ public class Column {
     private String name;
     private String comment;
     private ColumnType type;
-    private Object defaultValue;
+    private String defaultValue;
     private Integer length;
     private Integer precision;
     private Integer scale;
@@ -33,7 +33,7 @@ public class Column {
         return this;
     }
 
-    public Column setDefaultValue(Object defaultValue) {
+    public Column setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
@@ -119,7 +119,7 @@ public class Column {
         return type;
     }
 
-    public Object getDefaultValue() {
+    public String getDefaultValue() {
         return defaultValue;
     }
 

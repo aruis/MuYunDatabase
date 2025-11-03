@@ -107,6 +107,28 @@ public class AnnotationProcessor {
                     column.setSequence();
                 }
 
+                if (field.isAnnotationPresent(Default.Varchar.class)) {
+                    Default.Varchar varcharAnnotation = field.getAnnotation(Default.Varchar.class);
+                    column.setDefaultValue("'" + varcharAnnotation.value() + "'");
+                } else if (field.isAnnotationPresent(Default.Bool.class)) {
+                    Default.Bool boolAnnotation = field.getAnnotation(Default.Bool.class);
+                    column.setDefaultValue(boolAnnotation.value() ? "TRUE" : "FALSE");
+                } else if (field.isAnnotationPresent(Default.Number.class)) {
+                    Default.Number numberAnnotation = field.getAnnotation(Default.Number.class);
+                    column.setDefaultValue(String.valueOf(numberAnnotation.value()));
+                } else if (field.isAnnotationPresent(Default.Decimal.class)) {
+                    Default.Decimal decimalAnnotation = field.getAnnotation(Default.Decimal.class);
+                    column.setDefaultValue(String.valueOf(decimalAnnotation.value()));
+                } else if (field.isAnnotationPresent(Default.Function.class)) {
+                    Default.Function functionAnnotation = field.getAnnotation(Default.Function.class);
+                    column.setDefaultValue(functionAnnotation.value());
+                } else if (field.isAnnotationPresent(Default.Express.class)) {
+                    Default.Express expressAnnotation = field.getAnnotation(Default.Express.class);
+                    column.setDefaultValue(expressAnnotation.value());
+                } else if (field.isAnnotationPresent(Default.Null.class)) {
+                    column.setDefaultValue("NULL");
+                }
+
                 if (idAnnotation != null) {
                     tableWrapper.setPrimaryKey(column);
                 } else {

@@ -3,7 +3,6 @@ package net.ximatai.muyun.database.core.metadata;
 import net.ximatai.muyun.database.core.builder.Column;
 import net.ximatai.muyun.database.core.builder.ColumnType;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DBColumn {
@@ -15,10 +14,6 @@ public class DBColumn {
     private boolean primaryKey;
     private boolean sequence;
     private Integer length;
-
-    // 使用正则表达式来匹配单引号之间的内容
-    private static String regex = "'([^']*)'";
-    private static Pattern pattern = Pattern.compile(regex);
 
     public String getName() {
         return name;
@@ -44,7 +39,8 @@ public class DBColumn {
         this.type = type;
     }
 
-    public Object getDefaultValue() {
+    public String getDefaultValue() {
+//        return defaultValue;
         return extractDefaultContent(defaultValue);
     }
 
@@ -91,23 +87,26 @@ public class DBColumn {
         return getName();
     }
 
-    public Object extractDefaultContent(String input) {
+    public String extractDefaultContent(String input) {
         if (input == null) {
             return null;
         }
 
-        if (this.getType().equalsIgnoreCase("bool")) {
-            return Boolean.parseBoolean(input);
-        } else if (this.getType().startsWith("int")) {
-            return Integer.parseInt(input);
+        if (this.getType().equalsIgnoreCase("bit")) {
+            if (input.equals("1")) {
+                return "true";
+            } else if (input.equals("0")) {
+                return "false";
+            }
         }
 
-        Matcher matcher = pattern.matcher(input);
-        // 查找并返回匹配的内容
-        if (matcher.find()) {
-            return matcher.group(1);  // 返回第一个括号中的匹配结果
+        if (this.getType().equalsIgnoreCase("varchar")
+                && !input.contains("::")
+                && !input.endsWith("()")) {
+            return "'" + input + "'";
         }
-        return input;  // 如果没有匹配的内容，返回 null
+
+        return input;
     }
 
     public Integer getLength() {

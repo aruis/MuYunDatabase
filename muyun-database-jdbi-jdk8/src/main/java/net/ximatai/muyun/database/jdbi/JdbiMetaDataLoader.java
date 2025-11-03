@@ -2,22 +2,14 @@ package net.ximatai.muyun.database.jdbi;
 
 import net.ximatai.muyun.database.core.IMetaDataLoader;
 import net.ximatai.muyun.database.core.exception.MuYunDatabaseException;
-import net.ximatai.muyun.database.core.metadata.DBColumn;
-import net.ximatai.muyun.database.core.metadata.DBIndex;
-import net.ximatai.muyun.database.core.metadata.DBInfo;
-import net.ximatai.muyun.database.core.metadata.DBSchema;
-import net.ximatai.muyun.database.core.metadata.DBTable;
+import net.ximatai.muyun.database.core.metadata.*;
 import org.jdbi.v3.core.Jdbi;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static net.ximatai.muyun.database.core.exception.MuYunDatabaseException.Type.READ_METADATA_ERROR;
 
@@ -178,6 +170,10 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
                         if (defaultValue != null && defaultValue.startsWith("nextval(")) {
                             column.setSequence();
                         }
+                        if (column.isSequence() && info.getDatabaseType().equals(DBInfo.Type.MYSQL) && defaultValue == null) {
+                            column.setDefaultValue("AUTO_INCREMENT");
+                        }
+
                         column.setDescription(rs.getString("REMARKS"));
 
                         columnMap.put(column.getName(), column);

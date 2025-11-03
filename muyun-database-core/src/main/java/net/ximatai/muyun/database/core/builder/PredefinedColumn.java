@@ -35,7 +35,7 @@ public final class PredefinedColumn {
     public static final class System {
         public static final Column DELETE_FLAG = new Column("b_delete")
                 .setType(ColumnType.BOOLEAN)
-                .setDefaultValue(false);
+                .setDefaultValue("false");
 
         public static final Column TREE_PID = new Column("pid")
                 .setType(ColumnType.VARCHAR)

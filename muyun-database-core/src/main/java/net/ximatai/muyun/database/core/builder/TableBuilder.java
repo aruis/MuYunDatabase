@@ -60,7 +60,7 @@ public class TableBuilder {
 
         DBTable dbTable = info.getSchema(schema).getTable(wrapper.getName());
 
-        fillWrapperByInherits(dbTable, inherits);
+        buildInheritColumns(dbTable, inherits);
 
         if (wrapper.getComment() != null) {
             if (getDatabaseType().equals(POSTGRESQL)) {
@@ -111,7 +111,7 @@ public class TableBuilder {
         }
     }
 
-    private void fillWrapperByInherits(DBTable dbTable, List<TableBase> inherits) {
+    private void buildInheritColumns(DBTable dbTable, List<TableBase> inherits) {
         AtomicBoolean isModify = new AtomicBoolean(false);
         inherits.forEach(inherit -> {
             DBTable table = info.getSchema(inherit.getSchema()).getTable(inherit.getName());
@@ -128,7 +128,7 @@ public class TableBuilder {
     }
 
     private boolean checkAndBuildColumn(DBTable dbTable, Column column) {
-        boolean result = false;
+        boolean isNew = false;
         String name = column.getName();
         ColumnType dataType = column.getType();
         String type = getColumnTypeTransform().transform(dataType);
@@ -139,7 +139,7 @@ public class TableBuilder {
             Objects.requireNonNull(type, "column: " + column + " type not provided");
         }
 
-        Object defaultValue = column.getDefaultValue();
+        String defaultValue = column.getDefaultValue();
         String comment = column.getComment();
         String length = getColumnLength(column);
 
@@ -147,10 +147,12 @@ public class TableBuilder {
         boolean nullable = column.isNullable();
         boolean primaryKey = column.isPrimaryKey();
 
+        String baseColumnString = name + " " + type + length + (nullable ? " null " : " not null ") + ("AUTO_INCREMENT".equalsIgnoreCase(defaultValue) ? "" : " DEFAULT ") + defaultValue + (primaryKey ? " PRIMARY KEY " : "");
+
         if (!dbTable.contains(name)) {
-            db.execute("alter table " + dbTable.getSchemaDotTable() + " add " + name + " " + type + length);
+            db.execute("alter table " + dbTable.getSchemaDotTable() + " add " + baseColumnString);
             dbTable.resetColumns();
-            result = true;
+            isNew = true;
         }
 
         DBColumn dbColumn = dbTable.getColumn(name);
@@ -159,7 +161,7 @@ public class TableBuilder {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("alter table " + dbTable.getSchemaDotTable() + " alter column " + name + " type " + type + length);
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + name + " " + type + length);
+                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + baseColumnString);
             }
         }
 
@@ -170,41 +172,19 @@ public class TableBuilder {
         if (dbColumn.isNullable() != nullable) {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 String flag = nullable ? "drop" : "set";
-                db.execute("alter table " + dbTable.getSchemaDotTable() + " alter column " + name + " " + flag + length + " not null");
+                db.execute("alter table " + dbTable.getSchemaDotTable() + " alter column " + name + " " + flag + " not null");
             } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + name + " " + type + length + " " + (nullable ? "null" : "not null"));
+                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + baseColumnString);
             }
 
         }
 
-        if (!dbColumn.isSequence() && !Objects.equals(dbColumn.getDefaultValue(), defaultValue)) {
-            if ("varchar".equalsIgnoreCase(type) && defaultValue instanceof String) {
-                String value = defaultValue.toString();
-                if (!value.contains("(") && !value.contains(")")) {
-                    defaultValue = "'" + value + "'";
-                }
-            }
-
+        if ((!dbColumn.isSequence() && !Objects.equals(dbColumn.getDefaultValue(), defaultValue))) {
             if (getDatabaseType().equals(POSTGRESQL)) {
                 db.execute("alter table " + dbTable.getSchemaDotTable() + " alter column " + name + " set default " + defaultValue);
             } else if (getDatabaseType().equals(MYSQL)) {
-                if ("AUTO_INCREMENT".equals(defaultValue)) {
-                    db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + name + " " + type + " " + defaultValue);
-                } else {
-                    db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + name + " " + type + length + " DEFAULT " + defaultValue);
-                }
-
+                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + baseColumnString);
             }
-        }
-
-        if (comment != null && !Objects.equals(dbColumn.getDescription(), comment)) {
-            if (getDatabaseType().equals(POSTGRESQL)) {
-                db.execute("comment on column " + dbTable.getSchemaDotTable() + "." + name + " is '" + comment + "'");
-            } else if (getDatabaseType().equals(MYSQL)) {
-                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + name + " " + type + length + " COMMENT '" + comment + "'");
-//                ALTER TABLE public.basic modify COLUMN id BIGINT COMMENT '这里是你的注释内容';
-            }
-
         }
 
         if (getDatabaseType().equals(POSTGRESQL) && dbColumn.isSequence() != sequence) {
@@ -218,7 +198,15 @@ public class TableBuilder {
             }
         }
 
-        return result;
+        if (comment != null && !Objects.equals(dbColumn.getDescription(), comment)) {
+            if (getDatabaseType().equals(POSTGRESQL)) {
+                db.execute("comment on column " + dbTable.getSchemaDotTable() + "." + name + " is '" + comment + "'");
+            } else if (getDatabaseType().equals(MYSQL)) {
+                db.execute("alter table " + dbTable.getSchemaDotTable() + " modify column " + baseColumnString + " COMMENT '" + comment + "'");
+            }
+        }
+
+        return isNew;
     }
 
     private String getColumnLength(Column column) {

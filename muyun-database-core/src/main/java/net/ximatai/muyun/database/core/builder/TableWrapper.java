@@ -96,12 +96,12 @@ public class TableWrapper extends TableBase {
         return this;
     }
 
-    public TableWrapper addColumn(String columnName, String comment, Object defaultValue) {
+    public TableWrapper addColumn(String columnName, String comment, String defaultValue) {
         columns.add(Column.of(columnName).setComment(comment).setDefaultValue(defaultValue));
         return this;
     }
 
-    public TableWrapper addColumn(String columnName, String comment, Object defaultValue, boolean nullable) {
+    public TableWrapper addColumn(String columnName, String comment, String defaultValue, boolean nullable) {
         columns.add(Column.of(columnName).setComment(comment).setDefaultValue(defaultValue).setNullable(nullable));
         return this;
     }
