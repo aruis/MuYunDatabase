@@ -142,7 +142,7 @@ public class JdbiMetaDataLoader implements IMetaDataLoader {
 
     @Override
     public Map<String, DBColumn> getColumnMap(String schema, String table) {
-        Map<String, DBColumn> columnMap = new HashMap<>();
+        Map<String, DBColumn> columnMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         getJdbi().useHandle(handle -> {
             Connection connection = handle.getConnection();

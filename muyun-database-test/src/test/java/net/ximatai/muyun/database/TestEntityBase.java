@@ -22,6 +22,9 @@ public class TestEntityBase {
     @Column(precision = 10, scale = 2, defaultVal = @Default(decimal = 1.23))
     public double price;
 
+    @Column(precision = 10, scale = 2, defaultVal = @Default(decimal = 1.23))
+    public float price2;
+
     @Indexed
     @Column(defaultVal = @Default(trueVal = true))
     public boolean flag;

@@ -465,6 +465,8 @@ public abstract class MuYunDatabaseBaseTest {
         assertNotNull(table);
 
         assertTrue(table.contains("id"));
+        assertTrue(table.contains("ID"));
+        assertTrue(table.contains("Id"));
         assertTrue(table.contains("name"));
         assertTrue(table.contains("age"));
         assertTrue(table.contains("price"));
