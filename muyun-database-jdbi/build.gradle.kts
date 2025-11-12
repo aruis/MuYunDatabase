@@ -5,7 +5,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
     withJavadocJar()
     withSourcesJar()
@@ -13,5 +13,5 @@ java {
 
 dependencies {
     api(project(":muyun-database-core"))
-    api("org.jdbi:jdbi3-core:3.39.1") // 最后一个支持Java 8的版本
+    api("org.jdbi:jdbi3-core:3.50.0")
 }

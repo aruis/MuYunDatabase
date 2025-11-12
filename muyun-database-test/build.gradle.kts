@@ -15,7 +15,7 @@ tasks.test {
 }
 
 dependencies {
-    testImplementation(project(":muyun-database-jdbi-jdk8"))
+    testImplementation(project(":muyun-database-jdbi"))
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
