@@ -8,7 +8,7 @@ plugins {
 allprojects {
     group = "net.ximatai.muyun.database"
 //    version = "1.0.0-SNAPSHOT"
-    version = "1.25.18"
+    version = "1.25.19"
 
     repositories {
         maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven") }
@@ -83,6 +83,12 @@ subprojects {
             findProperty("signing.secretKey").toString(),
             findProperty("signing.password").toString()
         )
+    }
+
+    tasks.withType<Javadoc>().configureEach {
+        val options = options as StandardJavadocDocletOptions
+        options.addStringOption("Xdoclint:none", "-quiet")
+        options.addBooleanOption("Xwerror", false)
     }
 }
 

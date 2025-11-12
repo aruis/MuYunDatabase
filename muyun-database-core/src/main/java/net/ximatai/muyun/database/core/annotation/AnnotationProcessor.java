@@ -10,7 +10,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 注解转化工具
+ */
 public class AnnotationProcessor {
+
+    /**
+     * 获取所有转化后的数据库字段
+     *
+     * @param type
+     * @return
+     */
     public static List<Field> getAllFields(Class<?> type) {
 
         List<Field> fields = new ArrayList<>(Arrays.asList(type.getDeclaredFields()));
@@ -27,6 +37,12 @@ public class AnnotationProcessor {
         return fields;
     }
 
+    /**
+     * 从实体类中获取表信息
+     *
+     * @param entityClass
+     * @return
+     */
     public static TableWrapper fromEntityClass(Class<?> entityClass) {
 
         Table tableAnnotation = findTableAnnotation(entityClass);
@@ -145,6 +161,12 @@ public class AnnotationProcessor {
         return tableWrapper;
     }
 
+    /**
+     * 获取所有的联合索引
+     *
+     * @param
+     * @return
+     */
     private static List<CompositeIndex> findAllCompositeIndex(Class<?> clazz) {
         List<CompositeIndex> indexes = new ArrayList<>();
 

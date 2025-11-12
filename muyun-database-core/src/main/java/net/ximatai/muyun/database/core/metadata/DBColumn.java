@@ -5,16 +5,23 @@ import net.ximatai.muyun.database.core.builder.ColumnType;
 
 import java.util.regex.Pattern;
 
+/**
+ * 数据库列元数据类
+ * 用于封装从数据库元数据中读取的列信息
+ * 提供与构建器Column类的转换功能
+ */
 public class DBColumn {
-    private String name;
-    private String description;
-    private String type;
-    private String defaultValue;
-    private boolean nullable;
-    private boolean primaryKey;
-    private boolean sequence;
-    private Integer length;
+    // 列基本信息
+    private String name;           // 列名
+    private String description;    // 列注释/描述
+    private String type;          // 数据库类型字符串
+    private String defaultValue;  // 默认值原始字符串
+    private boolean nullable;     // 是否允许为空
+    private boolean primaryKey;   // 是否为主键
+    private boolean sequence;     // 是否使用序列
+    private Integer length;       // 字段长度
 
+    // Getter和Setter方法
     public String getName() {
         return name;
     }
@@ -39,8 +46,13 @@ public class DBColumn {
         this.type = type;
     }
 
+    /**
+     * 获取处理后的默认值
+     * 对原始默认值进行格式化处理，使其符合SQL标准
+     *
+     * @return 格式化后的默认值
+     */
     public String getDefaultValue() {
-//        return defaultValue;
         return extractDefaultContent(defaultValue);
     }
 
@@ -68,18 +80,34 @@ public class DBColumn {
         return sequence;
     }
 
+    /**
+     * 设置为序列字段
+     */
     public void setSequence() {
         this.sequence = true;
     }
 
+    /**
+     * 设置为可空字段
+     */
     public void setNullable() {
         this.nullable = true;
     }
 
+    /**
+     * 设置为主键字段
+     * 主键字段自动设置为非空
+     */
     public void setPrimaryKey() {
         this.primaryKey = true;
     }
 
+    /**
+     * 获取显示标签
+     * 优先返回描述信息，无描述时返回列名
+     *
+     * @return 显示用的标签文本
+     */
     public String getLabel() {
         if (getDescription() != null) {
             return getDescription();
@@ -87,11 +115,22 @@ public class DBColumn {
         return getName();
     }
 
+    /**
+     * 提取并格式化默认值内容
+     * 对不同类型的默认值进行适当处理：
+     * - BIT类型：将1/0转换为true/false
+     * - VARCHAR类型：为字符串值添加单引号
+     * - 其他类型：保持原样
+     *
+     * @param input 原始默认值
+     * @return 格式化后的默认值
+     */
     public String extractDefaultContent(String input) {
         if (input == null) {
             return null;
         }
 
+        // BIT类型处理：1->true, 0->false
         if (this.getType().equalsIgnoreCase("bit")) {
             if (input.equals("1")) {
                 return "true";
@@ -100,9 +139,10 @@ public class DBColumn {
             }
         }
 
+        // VARCHAR类型处理：为纯字符串值添加引号
         if (this.getType().equalsIgnoreCase("varchar")
-                && !input.contains("::")
-                && !input.endsWith("()")) {
+                && !input.contains("::")          // 排除类型转换表达式
+                && !input.endsWith("()")) {       // 排除函数调用
             return "'" + input + "'";
         }
 
@@ -113,12 +153,24 @@ public class DBColumn {
         return length;
     }
 
+    /**
+     * 设置字段长度
+     * 过滤掉无效的长度值（如Integer.MAX_VALUE）
+     *
+     * @param length 字段长度
+     */
     public void setLength(Integer length) {
-        if (Integer.MAX_VALUE != length) { // 未设置长度的情况下，可能会读取到这个值
+        if (Integer.MAX_VALUE != length) { // 过滤数据库返回的无效长度值
             this.length = length;
         }
     }
 
+    /**
+     * 转换为构建器Column对象
+     * 用于将元数据转换为可构建的列定义
+     *
+     * @return 构建器Column实例
+     */
     public Column toColumn() {
         Column column = Column.of(this.getName());
         column.setComment(this.getDescription());

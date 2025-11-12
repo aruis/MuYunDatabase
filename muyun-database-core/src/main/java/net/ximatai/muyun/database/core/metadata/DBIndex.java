@@ -3,15 +3,25 @@ package net.ximatai.muyun.database.core.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 数据库索引元数据类
+ * 封装从数据库读取的索引信息，支持链式调用
+ */
 public class DBIndex {
-    private String name;
-    private boolean unique = false;
-    private final List<String> columns = new ArrayList<>();
+    private String name;                    // 索引名称
+    private boolean unique = false;         // 是否唯一索引
+    private final List<String> columns = new ArrayList<>();  // 索引包含的列名列表
 
     public String getName() {
         return name;
     }
 
+    /**
+     * 设置索引名称
+     *
+     * @param name 索引名称
+     * @return 当前DBIndex实例，支持链式调用
+     */
     public DBIndex setName(String name) {
         this.name = name;
         return this;
@@ -21,20 +31,42 @@ public class DBIndex {
         return unique;
     }
 
+    /**
+     * 设置是否唯一索引
+     *
+     * @param unique true为唯一索引，false为普通索引
+     * @return 当前DBIndex实例
+     */
     public DBIndex setUnique(boolean unique) {
         this.unique = unique;
         return this;
     }
 
+    /**
+     * 获取索引包含的列列表
+     *
+     * @return 列名字符串列表
+     */
     public List<String> getColumns() {
         return columns;
     }
 
-    public DBIndex addColumn(String columns) {
-        this.columns.add(columns);
+    /**
+     * 添加索引列
+     *
+     * @param column 列名
+     * @return 当前DBIndex实例
+     */
+    public DBIndex addColumn(String column) {
+        this.columns.add(column);
         return this;
     }
 
+    /**
+     * 检查是否为复合索引（多列索引）
+     *
+     * @return true表示包含多个列，false为单列索引
+     */
     public boolean isMulti() {
         return columns.size() > 1;
     }

@@ -25,15 +25,19 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
+/**
+ * JDBI数据库操作实现类
+ * 基于JDBI框架实现数据库的CRUD操作和数据类型转换
+ */
 public class JdbiDatabaseOperations implements IDatabaseOperations {
 
+    // 日期时间格式化器
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private Jdbi jdbi;
     private JdbiMetaDataLoader metaDataLoader;
     private RowMapper rowMapper = new MapMapper();
-
     private DBInfo dbInfo;
 
     @Override
@@ -48,6 +52,12 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
         return rowMapper;
     }
 
+    /**
+     * 设置自定义行映射器
+     *
+     * @param rowMapper 行映射器实例
+     * @return 当前操作实例
+     */
     public JdbiDatabaseOperations setRowMapper(RowMapper rowMapper) {
         Objects.requireNonNull(rowMapper);
         this.rowMapper = rowMapper;
@@ -70,33 +80,33 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
 
     @Override
     public Map<String, ?> transformDataForDB(DBTable dbTable, Map<String, ?> data) {
-        // 创建一个新的 Map 来存储修改后的数据
         Map<String, Object> transformedData = new HashMap<>(data);
-
-        // 遍历原数据并修改
         transformedData.forEach((k, v) -> {
             DBColumn dbColumn = dbTable.getColumn(k);
             if (dbColumn != null) {
                 transformedData.put(k, getDBValue(v, dbColumn.getType()));
             }
         });
-
         return transformedData;
     }
 
+    /**
+     * 将Java对象转换为数据库对应的数据类型
+     * 支持数组、数值、布尔、日期时间等类型转换
+     *
+     * @param value Java对象值
+     * @param type 数据库类型名称
+     * @return 转换后的数据库值
+     */
     public Object getDBValue(Object value, String type) {
         if (value == null) {
             return null;
         }
 
-//        if (value instanceof List) {
-//            return ((List<?>) value).toArray();
-//        }
-
-        // 以_开头的是数组类型，形如：_int4，目前只考虑支持 varchar、integer 和 bool
+        // 处理数组类型（以_开头的类型，如_varchar）
         if (type.startsWith("_")) {
             if (value instanceof java.sql.Array) {
-                return value; // 已经是数组类型，直接返回
+                return value;
             }
 
             Object[] arrayValue;
@@ -107,11 +117,10 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
                 List<?> list = (List<?>) value;
                 arrayValue = list.toArray();
             } else {
-                return value; // 不支持的输入类型，直接返回
+                return value;
             }
 
             String subType = type.substring(1);
-
             switch (subType) {
                 case "varchar":
                     return Arrays.stream(arrayValue)
@@ -126,11 +135,11 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
                             .map(val -> Boolean.parseBoolean(val.toString()))
                             .toArray(Boolean[]::new);
                 default:
-                    return value; // 不支持的类型，返回原值
+                    return value;
             }
-
         }
 
+        // 处理标量类型
         switch (type) {
             case "varchar":
                 return value.toString();
@@ -146,13 +155,11 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
                 return handleDateTimestamp(value);
             case "numeric":
                 return convertToBigDecimal(value);
-//            case "json", "jsonb" -> convertToJson(value);
             case "bytea":
                 return convertToByteArray(value);
             default:
                 return value;
         }
-
     }
 
     @Override
@@ -201,7 +208,6 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
                 .map(getRowMapper())
                 .findOne()
                 .orElse(null));
-
     }
 
     @Override
@@ -210,13 +216,11 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
             Query query = handle.createQuery(sql).attachToHandleForCleanup();
             if (params != null && !params.isEmpty()) {
                 for (int i = 0; i < params.size(); i++) {
-                    query.bind(i, params.get(i));  // 通过索引绑定参数
+                    query.bind(i, params.get(i));
                 }
             }
-
             return query.map(getRowMapper()).findOne().orElse(null);
         });
-
         return (Map<String, Object>) row;
     }
 
@@ -234,13 +238,11 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
     public List<Map<String, Object>> query(String sql, List<?> params) {
         return getJdbi().withHandle(handle -> {
             Query query = handle.createQuery(sql).attachToHandleForCleanup();
-
             if (params != null && !params.isEmpty()) {
                 for (int i = 0; i < params.size(); i++) {
-                    query.bind(i, params.get(i));  // 通过索引绑定参数
+                    query.bind(i, params.get(i));
                 }
             }
-
             return query.map(getRowMapper()).list();
         });
     }
@@ -258,13 +260,11 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
     public Integer update(String sql, List<?> params) {
         return getJdbi().withHandle(handle -> {
             Update query = handle.createUpdate(sql).attachToHandleForCleanup();
-
             if (params != null && !params.isEmpty()) {
                 for (int i = 0; i < params.size(); i++) {
-                    query.bind(i, params.get(i));  // 通过索引绑定参数
+                    query.bind(i, params.get(i));
                 }
             }
-
             return query.execute();
         });
     }
@@ -284,6 +284,13 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
         return getJdbi().withHandle(handle -> handle.execute(sql, params.toArray()));
     }
 
+    /**
+     * 创建数据库数组对象
+     *
+     * @param list 数据列表
+     * @param type 数组元素类型
+     * @return SQL数组对象
+     */
     public Array createArray(List list, String type) {
         try {
             return getJdbi().withHandle(handle -> {
@@ -295,6 +302,7 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
         }
     }
 
+    // 数据类型转换辅助方法
     private BigInteger convertToBigInteger(Object value) {
         if (value instanceof String) {
             return new BigInteger((String) value);
@@ -337,11 +345,13 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
         return Objects.equals(value, Boolean.TRUE) || "true".equalsIgnoreCase(value.toString());
     }
 
+    /**
+     * 字符串转换为SQL日期
+     */
     public static Date stringToSqlDate(String dateString) {
         if (dateString == null || dateString.isEmpty()) {
             throw new IllegalArgumentException("Date string cannot be null or empty.");
         }
-
         try {
             LocalDate localDate = LocalDate.parse(dateString.substring(0, 10), DATE_FORMATTER);
             return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -350,11 +360,13 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
         }
     }
 
+    /**
+     * 字符串转换为SQL时间戳
+     */
     public static Timestamp stringToSqlTimestamp(String dateString) {
         if (dateString == null || dateString.isEmpty()) {
             return null;
         }
-
         try {
             if (dateString.length() == 10) {
                 dateString += " 00:00:00";
@@ -366,6 +378,9 @@ public class JdbiDatabaseOperations implements IDatabaseOperations {
         }
     }
 
+    /**
+     * 处理日期时间类型转换
+     */
     public static Timestamp handleDateTimestamp(Object value) {
         if (value instanceof Timestamp) {
             return (Timestamp) value;
