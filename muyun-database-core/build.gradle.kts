@@ -10,3 +10,7 @@ java {
     withJavadocJar()
     withSourcesJar()
 }
+
+dependencies {
+    implementation(libs.slf4j.api)
+}

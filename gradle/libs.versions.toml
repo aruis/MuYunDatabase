@@ -1,0 +1,46 @@
+[versions]
+jdbi3 = "3.50.0"
+junit = "5.12.2"
+testcontainers = "1.21.0"
+
+hikariCP = "6.3.0"
+postgresql = "42.7.5"
+mysql = "9.3.0"
+
+slf4j = "2.0.17"
+logback = "1.5.21"
+
+[libraries]
+jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher"}
+hikariCP = { module = "com.zaxxer:HikariCP", version.ref = "hikariCP" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+[bundles]
+testcontainers-all = [
+    "testcontainers",
+    "testcontainers-junit-jupiter",
+    "testcontainers-postgresql",
+    "testcontainers-mysql"
+]
+
+junit-all = [
+    "junit-jupiter",
+    "junit-platform-launcher"
+]
+
+database-drivers = [
+    "postgresql",
+    "mysql"
+]
+
+[plugins]

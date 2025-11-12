@@ -8,7 +8,7 @@ plugins {
 allprojects {
     group = "net.ximatai.muyun.database"
 //    version = "1.0.0-SNAPSHOT"
-    version = "1.25.19"
+    version = "1.25.20"
 
     repositories {
         maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven") }

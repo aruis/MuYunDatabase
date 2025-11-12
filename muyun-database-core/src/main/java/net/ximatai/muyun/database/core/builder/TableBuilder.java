@@ -4,6 +4,8 @@ import net.ximatai.muyun.database.core.IDatabaseOperations;
 import net.ximatai.muyun.database.core.annotation.AnnotationProcessor;
 import net.ximatai.muyun.database.core.exception.MuYunDatabaseException;
 import net.ximatai.muyun.database.core.metadata.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,6 +14,8 @@ import static net.ximatai.muyun.database.core.metadata.DBInfo.Type.MYSQL;
 import static net.ximatai.muyun.database.core.metadata.DBInfo.Type.POSTGRESQL;
 
 public class TableBuilder {
+
+    private static final Logger logger = LoggerFactory.getLogger(TableBuilder.class);
 
     private final DBInfo info;
     private final IDatabaseOperations db;
@@ -27,6 +31,8 @@ public class TableBuilder {
     }
 
     public boolean build(TableWrapper wrapper) {
+        logger.info("building table " + wrapper.getSchemaDotTable());
+
         boolean result = false;
         String schema = wrapper.getSchema() != null ? wrapper.getSchema() : info.getDefaultSchemaName();
         String name = wrapper.getName();
@@ -36,6 +42,7 @@ public class TableBuilder {
         if (info.getSchema(schema) == null) {
             db.execute("create schema if not exists " + schema);
             info.addSchema(new DBSchema(schema));
+            logger.info("create schema " + schema);
         }
 
         List<TableBase> inherits = wrapper.getInherits();
@@ -53,7 +60,7 @@ public class TableBuilder {
 
         if (!info.getSchema(schema).containsTable(wrapper.getName())) {
             db.execute("create table " + schema + "." + name + "(a_temp_column int)" + inheritSQL);
-
+            logger.info("create table " + schema + "." + name);
             result = true;
             info.getSchema(schema).addTable(new DBTable(db.getMetaDataLoader()).setName(name).setSchema(schema));
         }
@@ -93,8 +100,9 @@ public class TableBuilder {
 
         fixTableInherits(dbTable, inherits);
 
-        return result;
+        logger.info("table " + wrapper.getSchemaDotTable() + " built");
 
+        return result;
     }
 
     private void fixTableInherits(DBTable dbTable, List<TableBase> inherits) {
@@ -106,6 +114,7 @@ public class TableBuilder {
 
                 if (row == null) {
                     db.execute("alter table " + dbTable.getSchemaDotTable() + " inherit " + inherit.getSchemaDotTable() + ";");
+                    logger.info("table " + dbTable.getSchemaDotTable() + " inherit " + inherit.getSchemaDotTable());
                 }
             });
         }
@@ -159,6 +168,7 @@ public class TableBuilder {
             db.execute("alter table " + dbTable.getSchemaDotTable() + " add " + baseColumnString);
             dbTable.resetColumns();
             isNew = true;
+            logger.info("column " + dbTable.getSchemaDotTable() + "." + name + " built");
         }
 
         DBColumn dbColumn = dbTable.getColumn(name);
@@ -246,7 +256,7 @@ public class TableBuilder {
                 } else {
                     db.execute("drop index " + dbIndex.getName() + " on " + dbTable.getSchemaDotTable() + ";");
                 }
-
+                logger.info("index " + dbTable.getSchemaDotTable() + "." + dbIndex.getName() + " dropped");
             }
 
         }
@@ -270,6 +280,8 @@ public class TableBuilder {
         } else if (getDatabaseType().equals(MYSQL)) {
             db.execute("create " + unique + " index " + indexName + " on " + dbTable.getSchemaDotTable() + "(" + String.join(",", columns) + ");");
         }
+
+        logger.info("index " + dbTable.getSchemaDotTable() + "." + indexName + " created");
 
         return true;
     }

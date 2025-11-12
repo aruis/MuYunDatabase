@@ -13,5 +13,5 @@ java {
 
 dependencies {
     api(project(":muyun-database-core"))
-    api("org.jdbi:jdbi3-core:3.50.0")
+    api(libs.jdbi3.core)
 }
