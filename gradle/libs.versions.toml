@@ -1,5 +1,5 @@
 [versions]
-jdbi3 = "3.50.0"
+jdbi3 = "3.39.1"
 junit = "5.12.2"
 testcontainers = "1.21.0"
 

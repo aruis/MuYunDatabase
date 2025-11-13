@@ -105,6 +105,9 @@ public class AnnotationProcessor {
                     if (!columnAnnotation.comment().isEmpty()) {
                         column.setComment(columnAnnotation.comment());
                     }
+                    if (!columnAnnotation.defaultValue().isEmpty()) {
+                        column.setDefaultValue(columnAnnotation.defaultValue());
+                    }
                 }
 
                 if (field.isAnnotationPresent(Indexed.class)) {

@@ -103,6 +103,17 @@ public @interface Column {
     String comment() default "";
 
     /**
+     * 列默认值（字符串形式）
+     * 注意：此属性已过时，建议使用defaultVal属性
+     * 由于字符串形式在处理复杂类型时存在局限性，已被更强大的defaultVal替代
+     *
+     * @return 默认值字符串，默认为空字符串
+     * @deprecated 使用defaultVal替代，提供更好的类型安全性
+     */
+    @Deprecated
+    String defaultValue() default "";
+
+    /**
      * 列默认值定义
      * 使用@Default注解提供更灵活和类型安全的默认值设置
      * 支持各种数据类型的默认值，包括函数调用、表达式等
