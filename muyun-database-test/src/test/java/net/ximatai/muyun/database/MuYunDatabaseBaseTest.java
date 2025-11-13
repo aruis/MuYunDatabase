@@ -525,8 +525,11 @@ public abstract class MuYunDatabaseBaseTest {
 
         assertTrue(table.contains("id"));
         assertTrue(table.getColumn("id").isPrimaryKey());
+        assertFalse(table.getColumn("name2").isNullable());
 
-        String string = db.insertItem("test_entity2", Map.of("id", UUID.randomUUID().toString()));
+        String string = db.insertItem("test_entity2",
+                Map.of("id", UUID.randomUUID().toString(),
+                        "name2", "test"));
 
         assertNotNull(string);
     }
@@ -582,7 +585,10 @@ class TestEntityBaseNoIdDefaultValue {
     @net.ximatai.muyun.database.core.annotation.Column(length = 36)
     public String id;
 
-    @net.ximatai.muyun.database.core.annotation.Column(length = 20, comment = "名称", defaultVal = @Default(varchar = "test_name"))
+    @net.ximatai.muyun.database.core.annotation.Column(length = 20, comment = "名称", defaultVal = @Default(varchar = "test_name"), nullable = false)
     public String name;
+
+    @net.ximatai.muyun.database.core.annotation.Column(length = 20, comment = "名称2", nullable = false)
+    public String name2;
 
 }

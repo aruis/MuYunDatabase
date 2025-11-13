@@ -91,6 +91,7 @@ public class AnnotationProcessor {
                     } else {
                         column.setType(columnAnnotation.type());
                     }
+                    column.setNullable(columnAnnotation.nullable());
 
                     if (columnAnnotation.length() > 0) {
                         column.setLength(columnAnnotation.length());
