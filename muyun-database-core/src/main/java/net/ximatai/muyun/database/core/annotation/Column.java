@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * 数据库列注解
  * 用于标记实体类字段与数据库表列的映射关系
  * 通过此注解可以定义列的各种属性，如名称、类型、约束等
- *
+ * <p>
  * 使用示例：
  * {@code
  * public class User {
@@ -103,32 +103,20 @@ public @interface Column {
     String comment() default "";
 
     /**
-     * 列默认值（字符串形式）
-     * 注意：此属性已过时，建议使用defaultVal属性
-     * 由于字符串形式在处理复杂类型时存在局限性，已被更强大的defaultVal替代
-     *
-     * @return 默认值字符串，默认为空字符串
-     * @deprecated 使用defaultVal替代，提供更好的类型安全性
-     */
-    @Deprecated
-    String defaultValue() default "";
-
-    /**
      * 列默认值定义
      * 使用@Default注解提供更灵活和类型安全的默认值设置
      * 支持各种数据类型的默认值，包括函数调用、表达式等
      * 通过unset属性判断是否设置了默认值
-     *
+     * <p>
      * 使用示例：
      * {@code
+     *
+     * @return Default注解实例，默认为未设置状态
      * @Column(defaultVal = @Default(value = "CURRENT_TIMESTAMP"))
      * private Date createTime;
-     *
      * @Column(defaultVal = @Default(value = "0"))
      * private Integer status;
      * }
-     *
-     * @return Default注解实例，默认为未设置状态
      */
     Default defaultVal() default @Default(unset = true);
 }
