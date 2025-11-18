@@ -105,10 +105,10 @@ public class DBInfo {
     public Type getDatabaseType() {
         String dbName = getTypeName().toUpperCase();
         switch (dbName) {
-            case "POSTGRESQL":
-                return Type.POSTGRESQL;
-            default:
+            case "MYSQL":
                 return Type.MYSQL;  // 默认为MySQL类型
+            default:
+                return Type.POSTGRESQL;
         }
     }
 }
